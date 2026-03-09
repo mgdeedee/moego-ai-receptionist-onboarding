@@ -336,6 +336,7 @@ body {
     <div class="nav-section-label">Your AI</div>
     <a class="nav-item" data-p2="p2-brand" onclick="showPart2Tab('p2-brand', this)" href="#"><span class="nav-dot"></span>Brand &amp; Voice</a>
     <a class="nav-item" data-p2="p2-booking" onclick="showPart2Tab('p2-booking', this)" href="#"><span class="nav-dot"></span>Booking</a>
+    <a class="nav-item" data-p2="p2-inservice" onclick="showPart2Tab('p2-inservice', this)" href="#"><span class="nav-dot"></span>In-Service</a>
     <a class="nav-item" data-p2="p2-upsell" onclick="showPart2Tab('p2-upsell', this)" href="#"><span class="nav-dot"></span>Upsell</a>
     <a class="nav-item" data-p2="p2-escalation" onclick="showPart2Tab('p2-escalation', this)" href="#"><span class="nav-dot"></span>Escalation</a>
   </div>
@@ -1123,6 +1124,93 @@ EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doi
 
   </div>
 
+    <div class="tab-panel" data-p2="p2-inservice">
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Detection &amp; Greeting</div></div>
+    <div class="card-body">
+      <div class="textarea-prompt">When the AI identifies that the caller's pet has an <strong>active stay</strong> in MoeGo (checked in, not yet picked up), it switches to in-service mode. How should it greet differently?</div>
+      <div class="service-field">
+        <div class="service-field-label">In-service greeting</div>
+        <textarea>"Hi [Client Name] — I see [Pet Name] is staying with us right now! How can I help?"
+
+The AI should acknowledge the active stay immediately. This tells the caller: "I know your pet is here, you don't need to explain."</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">If caller doesn't identify themselves</div>
+        <textarea>Ask for phone number or name first, then look up active reservations before proceeding. If no active stay is found, fall back to the standard greeting flow.</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">AI Can Handle vs. Transfer to Staff</div></div>
+    <div class="card-body">
+      <div class="textarea-prompt">The AI can read MoeGo data but <strong>cannot physically check on a pet</strong>. Define what the AI handles directly and what goes to your team.</div>
+      <div class="service-field">
+        <div class="service-field-label">AI handles directly (from MoeGo data)</div>
+        <textarea>• Confirm stay dates and pickup time
+• Confirm services booked (room type, add-ons, grooming appointment)
+• Extend the stay (check availability, communicate price, execute in MoeGo)
+• Arrange early pickup (update checkout date in MoeGo)
+• Share pup-date photos/videos if available in the system
+• Confirm feeding schedule and medication instructions on file</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to staff (AI cannot answer)</div>
+        <textarea>• "How is my pet doing?" — real-time status, behavior, mood
+• "Did they take their medication?" — medication administration confirmation
+• "Are they eating / sleeping OK?" — daily care details
+• "My pet has a medical condition, I need to update instructions" — care changes mid-stay
+• "I'm worried about my pet" — any concern about wellbeing
+• Any request that requires physically observing the pet</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Can the AI extend or shorten a stay directly?</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Yes — AI handles in MoeGo (check availability, confirm price, execute)</span>
+          <span class="pill" onclick="selectPill(this)">No — take details and transfer to staff</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Staff Handoff</div></div>
+    <div class="card-body">
+      <div class="textarea-prompt">Most in-service calls end with a staff handoff. Configure how the AI reassures the caller and connects them to your team.</div>
+      <div class="service-field">
+        <div class="service-field-label">Reassurance before transfer</div>
+        <textarea>"[Pet Name] is in great hands — let me get someone from our care team who can give you a fresh update."
+
+Always reassure FIRST, then explain the transfer. Never say "I don't have that information" without offering a path to someone who does.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer method</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Attempt live transfer — if no answer, offer callback</span>
+          <span class="pill" onclick="selectPill(this)">Always offer callback — don't attempt live transfer</span>
+          <span class="pill" onclick="selectPill(this)">Text update — staff sends a photo/update via text within [X] minutes</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Callback promise</div>
+        <textarea>"I'll have our care team reach out to you within 30 minutes with an update on [Pet Name]."
+
+Be specific about the timeframe. Log the request in MoeGo with: caller name, pet name, question asked, urgency level, promised callback time.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">After-hours in-service calls</div>
+        <textarea>If the facility is closed but the pet is staying overnight:
+"Our team is here with [Pet Name] around the clock. I'll make sure someone reaches out to you first thing at [opening time] tomorrow — or if it's urgent, I can try to connect you now."
+
+For true emergencies (pet health concern after hours): attempt immediate transfer to on-duty staff.</textarea>
+      </div>
+    </div>
+  </div>
+
+    </div>
+
     <div class="tab-panel" data-p2="p2-upsell">
 
   <div class="card">
@@ -1390,7 +1478,7 @@ const NAMES = {
   'm3-escalation': 'Escalation Scenarios',
   'signoff': 'Sign Off'
 };
-const P2_NAMES = { 'p2-brand': 'Brand & Voice', 'p2-booking': 'Booking', 'p2-upsell': 'Upsell', 'p2-escalation': 'Escalation' };
+const P2_NAMES = { 'p2-brand': 'Brand & Voice', 'p2-booking': 'Booking', 'p2-inservice': 'In-Service', 'p2-upsell': 'Upsell', 'p2-escalation': 'Escalation' };
 
 // ── LOCATION FROM URL + AUTO-SAVE (one form per location) ─────────
 const LOCATION_NAMES = { avondale: "Pete and Mac's Avondale", gilbert: "Pete and Mac's Gilbert" };
