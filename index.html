@@ -1161,7 +1161,7 @@ EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doi
     <div class="card-head"><div class="card-title">Upgrade Paths</div></div>
     <div class="card-body">
       <div class="textarea-prompt">The AI reviews each customer's history in MoeGo and offers <strong>one relevant upgrade</strong> per call. List every "from → to" path below — include the trigger condition and how the AI should position it. Edit freely to match your business.</div>
-      <textarea class="upsell-main-textarea" style="min-height: 380px; width: 100%; resize: vertical; box-sizing: border-box;">ROOM UPGRADES
+      <textarea id="upsell-upgrade-paths" class="upsell-main-textarea" style="min-height: 380px; width: 100%; resize: vertical; box-sizing: border-box;">ROOM UPGRADES
 Standard Boarding → Luxury Suite
   Trigger: 3+ night stays, anxious pets, or caller mentions wanting extra comfort.
   Script: "A lot of our guests in for longer stays really love the luxury suite — it's a bigger space with a raised bed and a camera so you can check in. Would you like to take a look at that option?"
@@ -1198,7 +1198,7 @@ Daycare single day → Daycare package
     <div class="card-head"><div class="card-title">What do you want the AI to do?</div></div>
     <div class="card-body">
       <div class="textarea-prompt">Describe how you want the AI to handle upsell and promotions — your goals, what to push, when to back off, or anything else we should know.</div>
-      <textarea class="upsell-custom-textarea" placeholder="e.g. I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls…" style="min-height: 160px; width: 100%; resize: vertical; box-sizing: border-box;"></textarea>
+      <textarea id="upsell-custom-goals" class="upsell-custom-textarea" placeholder="e.g. I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls…" style="min-height: 160px; width: 100%; resize: vertical; box-sizing: border-box;">I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls.</textarea>
     </div>
   </div>
 
@@ -1468,7 +1468,13 @@ function applyState(data, loc) {
   if (!content) return;
   if (data.textareas) {
     const els = content.querySelectorAll('textarea');
-    data.textareas.forEach((v, i) => { if (els[i]) els[i].value = v; });
+    data.textareas.forEach((v, i) => {
+      if (!els[i]) return;
+      var el = els[i];
+      if (el.id === 'upsell-upgrade-paths' && (v.includes('STEP 1 — LISTEN') || v.includes('STEP 2 — ACKNOWLEDGE'))) return;
+      if (el.id === 'upsell-custom-goals' && (v.includes('STEP 1 — LISTEN') || v.includes('STEP 2 — ACKNOWLEDGE') || (v.includes('ROOM UPGRADES') && v.includes('CROSS-SERVICE')))) return;
+      el.value = v;
+    });
   }
   if (data.inputs) {
     const els = content.querySelectorAll('input[type="text"], input[type="date"]');
