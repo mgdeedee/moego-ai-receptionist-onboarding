@@ -102,6 +102,21 @@ body {
 .btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:hover { background: var(--adark); }
 
+.restore-dropdown {
+  display: none; position: absolute; top: 100%; right: 0; margin-top: 6px;
+  min-width: 220px; max-height: 280px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 100; padding: 6px 0;
+}
+.restore-dropdown.open { display: block; }
+.restore-item {
+  display: block; width: 100%; padding: 8px 14px; text-align: left;
+  font-size: 12px; color: var(--text); background: none; border: none; cursor: pointer;
+  font-family: var(--sans);
+}
+.restore-item:hover { background: var(--s2); }
+.restore-empty { padding: 12px 14px; font-size: 12px; color: var(--t3); }
+
 /* ── CONTENT ── */
 .content { padding: 40px 48px 60px; width: 100%; max-width: 1000px; }
 .section { display: none; }
@@ -362,7 +377,10 @@ body {
       <span class="sep">›</span>
       <span class="cur" id="topCurrent">Overview</span>
     </div>
-    <div class="topbar-actions">
+    <div class="topbar-actions" style="position:relative">
+      <button class="btn btn-ghost" id="btnSave" onclick="manualSave()">Backup</button>
+      <button class="btn btn-ghost" onclick="openRestoreDropdown()" id="btnRestore">Restore ▼</button>
+      <div id="restoreDropdown" class="restore-dropdown"></div>
       <button class="btn btn-ghost" onclick="navPrev()">← Back</button>
       <button class="btn btn-primary" onclick="navNext()">Continue →</button>
     </div>
@@ -1124,6 +1142,20 @@ EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doi
       </div>
     </div>
 
+    <div class="card" style="margin-top: 24px; margin-bottom: 20px;">
+      <div class="card-head"><div class="card-title">Vaccine Gate</div></div>
+      <div class="card-body">
+        <div class="service-field">
+          <div class="service-field-label">When required vaccines are missing or expired</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Hard gate — do not book, route to staff</span>
+            <span class="pill" onclick="selectPill(this)">Soft gate — book with a flag, staff follows up</span>
+            <span class="pill" onclick="selectPill(this)">Inform only — tell the caller, but don't block the booking</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
     <div class="tab-panel" data-p2="p2-inservice">
@@ -1435,7 +1467,9 @@ function getLocationDisplayName(loc) {
   return LOCATION_NAMES[loc] || (loc.charAt(0).toUpperCase() + loc.slice(1).replace(/[-_]/g, ' '));
 }
 function getStorageKey(loc) { return 'moego_onboarding_' + loc; }
+function getVersionsKey(loc) { return 'moego_onboarding_' + loc + '_versions'; }
 
+const MAX_VERSIONS = 15;
 let _saveTimer = null;
 const SAVE_DEBOUNCE_MS = 500;
 function collectState() {
@@ -1531,9 +1565,71 @@ function persistState() {
     if (state) localStorage.setItem(key, JSON.stringify(state));
   } catch (e) {}
 }
+function pushVersion() {
+  var loc = getLocationFromUrl();
+  var state = collectState();
+  if (!state) return;
+  try {
+    var vKey = getVersionsKey(loc);
+    var raw = localStorage.getItem(vKey);
+    var list = raw ? JSON.parse(raw) : [];
+    list.unshift({ savedAt: new Date().toISOString(), state: state });
+    list = list.slice(0, MAX_VERSIONS);
+    localStorage.setItem(vKey, JSON.stringify(list));
+  } catch (e) {}
+}
+function getVersionsList() {
+  var loc = getLocationFromUrl();
+  try {
+    var raw = localStorage.getItem(getVersionsKey(loc));
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+function restoreVersion(index) {
+  var list = getVersionsList();
+  var item = list[index];
+  if (!item || !item.state) return;
+  var loc = getLocationFromUrl();
+  applyState(item.state, loc);
+  persistState();
+  closeRestoreDropdown();
+  var btn = document.getElementById('btnSave');
+  if (btn) { btn.textContent = 'Restored ✓'; setTimeout(function() { btn.textContent = 'Backup'; }, 2000); }
+}
+function openRestoreDropdown() {
+  var list = getVersionsList();
+  var dd = document.getElementById('restoreDropdown');
+  if (!dd) return;
+  if (list.length === 0) { dd.innerHTML = '<div class="restore-empty">No backups yet. Use Backup to create one.</div>'; dd.classList.add('open'); return; }
+  var html = list.slice(0, 20).map(function(item, i) {
+    var d = new Date(item.savedAt);
+    var label = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return '<button type="button" class="restore-item" onclick="restoreVersion(' + i + ')">' + label + '</button>';
+  }).join('');
+  dd.innerHTML = html;
+  dd.classList.add('open');
+}
+function closeRestoreDropdown() {
+  var dd = document.getElementById('restoreDropdown');
+  if (dd) dd.classList.remove('open');
+}
 function scheduleSave() {
   if (_saveTimer) clearTimeout(_saveTimer);
   _saveTimer = setTimeout(persistState, SAVE_DEBOUNCE_MS);
+}
+function manualSave() {
+  var state = collectState();
+  if (state) {
+    persistState();
+    pushVersion();
+  }
+  var btn = document.getElementById('btnSave');
+  if (btn) {
+    var orig = btn.textContent;
+    btn.textContent = 'Backed up ✓';
+    btn.disabled = true;
+    setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
 }
 
 // ── SCENARIO STYLES (injected once) ──────────────────────────────
@@ -2280,7 +2376,6 @@ function selectPill(el) {
   el.classList.add('selected');
   scheduleSave();
 }
-
 function selectBookingPath(el) {
   selectPill(el);
   const panel = el.closest('.tab-panel');
@@ -2358,6 +2453,10 @@ function showSvc(id, btn) {
     if (e.target.tagName === 'TEXTAREA') resizeTextarea(e.target);
   });
   setTimeout(resizeAllTextareas, 100);
+  document.addEventListener('click', function(e) {
+    var dd = document.getElementById('restoreDropdown');
+    if (dd && dd.classList.contains('open') && !dd.contains(e.target) && e.target.id !== 'btnRestore') closeRestoreDropdown();
+  });
 })();
 </script>
 </body>
