@@ -411,6 +411,7 @@ body {
       <span class="page-tag">Plane A · Knowledge Base</span>
       <div class="page-title">A.1 Identity & Hours</div>
       <div class="page-desc">Basic facts about your location. The AI uses these for every call.</div>
+      <div class="page-desc" style="margin-top: 4px; font-size: 12px; color: var(--blue); font-style: italic;">Review only, auto-pulled from your MoeGo settings.</div>
     </div>
     <div class="card">
       <div class="card-head"><div class="card-title">Business Identity</div></div>
@@ -466,6 +467,7 @@ CLOSED DATES
       <span class="page-tag">Plane A · Knowledge Base</span>
       <div class="page-title">A.2 Services &amp; Pricing</div>
       <div class="page-desc">Everything your location offers, with current pricing. Write naturally — the AI quotes prices exactly, so make sure they're correct. If a service isn't offered, leave that card blank.</div>
+      <div class="page-desc" style="margin-top: 4px; font-size: 12px; color: var(--blue); font-style: italic;">Review only, auto-pulled from your MoeGo settings.</div>
     </div>
     <div class="card">
       <div class="card-head"><div class="card-title">Boarding</div></div>
@@ -2292,7 +2294,8 @@ function showP2(id, btn) {
 }
 
 function showSvc(id, btn) {
-  const booking = document.querySelector('[data-p2="p2-booking"]');
+  const booking = document.querySelector('.tab-panel[data-p2="p2-booking"]');
+  if (!booking) return;
   booking.querySelectorAll('.tab-panel[data-svc]').forEach(p => p.classList.remove('active'));
   booking.querySelectorAll('#svc-tabs .tab-pill').forEach(t => t.classList.remove('active'));
   const panel = booking.querySelector('[data-svc="' + id + '"]');
