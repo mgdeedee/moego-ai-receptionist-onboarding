@@ -1,0 +1,2318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoeGo AI Receptionist — Setup Review · Pete and Mac's Avondale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F6F3;
+  --surface: #FFFFFF;
+  --s2: #F2F1EE;
+  --border: #E5E3DE;
+  --bstrong: #C8C5BF;
+  --text: #1A1916;
+  --t2: #6B6860;
+  --t3: #9A9690;
+  --accent: #D97757;
+  --asoft: #FBF0EC;
+  --adark: #B85E3E;
+  --blue: #3B6EA5;
+  --bsoft: #EEF3FA;
+  --green: #2E7D5E;
+  --gsoft: #EAF4EF;
+  --r: 8px;
+  --rl: 12px;
+  --sans: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --sidebar-w: 232px;
+  --muted: #9A9690;
+}
+
+/* ── CARD TEXTAREA ── */
+.card textarea {
+  width: 100%; min-height: 320px; padding: 14px 16px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: var(--sans); font-size: 13.5px; line-height: 1.7;
+  background: var(--surface); color: var(--text); resize: vertical;
+  box-sizing: border-box;
+}
+.card textarea::placeholder { color: var(--muted); font-style: italic; }
+.card .textarea-prompt { font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+/* Min heights per context; JS will auto-grow to content for easier review */
+.field-value textarea { min-height: 200px; }
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans); background: var(--bg); color: var(--text);
+  font-size: 14px; line-height: 1.6; min-height: 100vh;
+}
+
+/* ── LAYOUT ── */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow-y: auto; z-index: 100;
+}
+.main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── SIDEBAR ── */
+.logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.logo-name { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+.logo-sub  { font-size: 11px; color: var(--t3); margin-top: 2px; }
+
+.nav-section { border-bottom: 1px solid var(--border); padding: 8px 0; }
+.nav-section-label {
+  padding: 5px 20px 2px; font-size: 10px; font-weight: 700;
+  color: var(--t3); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 8px; padding: 5px 20px;
+  font-size: 12.5px; color: var(--t2); cursor: pointer; text-decoration: none;
+  border-left: 2px solid transparent; transition: background 0.1s, color 0.1s;
+}
+.nav-item:hover { background: var(--s2); color: var(--text); }
+.nav-item.active { background: var(--asoft); color: var(--adark); border-left-color: var(--accent); font-weight: 500; }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--bstrong); flex-shrink: 0; transition: background 0.15s; }
+.nav-item.active .nav-dot { background: var(--accent); }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; background: rgba(247,246,243,0.93);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+  height: 50px; padding: 0 44px; display: flex; align-items: center;
+  justify-content: space-between; z-index: 50; flex-shrink: 0;
+}
+.topbar-bc { font-size: 13px; color: var(--t2); display: flex; align-items: center; gap: 6px; }
+.topbar-bc .sep { color: var(--bstrong); }
+.topbar-bc .cur { color: var(--text); font-weight: 500; }
+.topbar-actions { display: flex; gap: 8px; }
+
+.btn {
+  height: 30px; padding: 0 16px; border-radius: var(--r);
+  font-size: 12.5px; font-family: var(--sans); font-weight: 500;
+  cursor: pointer; border: none; display: inline-flex; align-items: center; transition: all 0.12s;
+}
+.btn-ghost { background: transparent; color: var(--t2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface); color: var(--text); border-color: var(--bstrong); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--adark); }
+
+/* ── CONTENT ── */
+.content { padding: 40px 48px 60px; width: 100%; max-width: 1000px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-tag { font-size: 10.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block; }
+.page-title { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; line-height: 1.25; }
+.page-desc { margin-top: 8px; font-size: 13.5px; color: var(--t2); max-width: 560px; line-height: 1.65; }
+.page-header { margin-bottom: 28px; }
+
+/* ── CARD ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); margin-bottom: 18px; overflow: hidden; }
+.card-head { padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--s2); }
+.card-title { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.card-body { padding: 20px; }
+
+/* ── FIELD TABLE ── */
+.field-table { width: 100%; border-collapse: collapse; }
+.field-table tr { border-bottom: 1px solid var(--border); }
+.field-table tr:last-child { border-bottom: none; }
+.field-label {
+  padding: 11px 16px; font-size: 12px; font-weight: 500; color: var(--t2);
+  background: var(--s2); border-right: 1px solid var(--border);
+  width: 195px; vertical-align: top; padding-top: 13px; line-height: 1.4;
+}
+.field-value { padding: 10px 16px; font-size: 13px; color: var(--text); vertical-align: middle; }
+.field-value input, .field-value textarea {
+  border: none; background: transparent; font-family: var(--sans);
+  font-size: 13px; color: var(--text); width: 100%; outline: none; resize: none; line-height: 1.5;
+}
+.field-value input::placeholder, .field-value textarea::placeholder { color: var(--t3); }
+.field-value:focus-within { background: var(--s2); }
+
+/* ── DATA TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  padding: 8px 14px; background: var(--s2); font-size: 10.5px; font-weight: 600;
+  color: var(--t3); text-transform: uppercase; letter-spacing: 0.05em;
+  text-align: left; border-bottom: 1px solid var(--border);
+}
+.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table td input {
+  border: none; background: transparent; font-family: var(--sans);
+  font-size: 13px; color: var(--text); width: 100%; outline: none;
+}
+.data-table td input::placeholder { color: var(--t3); }
+.data-table td:focus-within { background: var(--s2); }
+.data-table select {
+  border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px;
+  font-family: var(--sans); font-size: 12px; background: var(--surface);
+  color: var(--text); cursor: pointer; width: 100%;
+}
+
+/* ── CALLOUT ── */
+.callout { display: flex; gap: 10px; padding: 12px 16px; border-radius: var(--r); margin-bottom: 16px; font-size: 13px; line-height: 1.55; }
+.callout.note { background: var(--s2); color: var(--t2); border: 1px solid var(--border); }
+.callout.info { background: var(--bsoft); color: var(--blue); }
+.callout-icon { flex-shrink: 0; font-size: 15px; }
+
+/* ── SECTION DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 22px 0; }
+.sub-label { font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.07em; margin: 22px 0 11px; }
+
+/* ── CHOICES ── */
+.choice-group { margin-bottom: 22px; }
+.choice-group:last-child { margin-bottom: 0; }
+.choice-question { font-size: 13.5px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.choice-hint { font-size: 12px; color: var(--t3); margin-bottom: 10px; line-height: 1.5; }
+.choices { display: flex; flex-direction: column; gap: 6px; }
+.choice {
+  display: flex; align-items: flex-start; gap: 11px; padding: 11px 14px;
+  border: 1px solid var(--border); border-radius: var(--r); cursor: pointer;
+  background: var(--surface); transition: all 0.12s;
+}
+.choice:hover { border-color: var(--bstrong); background: var(--s2); }
+.choice.selected { border-color: var(--accent); background: var(--asoft); }
+.choice-radio {
+  width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--bstrong);
+  flex-shrink: 0; margin-top: 2px; position: relative; transition: all 0.12s;
+}
+.choice.selected .choice-radio { background: var(--accent); border-color: var(--accent); }
+.choice-radio::after {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); width: 5px; height: 5px;
+  border-radius: 50%; background: #fff; opacity: 0; transition: opacity 0.12s;
+}
+.choice.selected .choice-radio::after { opacity: 1; }
+.choice-text strong { font-size: 13px; font-weight: 500; color: var(--text); display: block; }
+.choice-text p { font-size: 12px; color: var(--t2); margin-top: 2px; line-height: 1.5; }
+
+/* ── WELCOME HERO ── */
+.hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); padding: 30px; margin-bottom: 20px; }
+.hero h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+.hero .hero-desc { font-size: 14px; color: var(--t2); line-height: 1.65; max-width: 520px; }
+.steps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 22px; }
+.step-card { background: var(--s2); border-radius: var(--r); padding: 16px; }
+.step-num { font-size: 10.5px; font-weight: 700; color: var(--accent); font-family: var(--mono); margin-bottom: 5px; }
+.step-name { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+.step-desc { font-size: 12.5px; color: var(--t2); line-height: 1.55; }
+
+/* ── SIGN OFF ── */
+.signoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.signoff-box { background: var(--s2); border-radius: var(--r); padding: 18px; }
+.signoff-box-title { font-size: 10.5px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+.signoff-field { margin-bottom: 10px; }
+.signoff-field label { display: block; font-size: 11.5px; color: var(--t2); margin-bottom: 3px; }
+.signoff-field input, .signoff-field textarea {
+  width: 100%; padding: 0 11px; height: 32px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: var(--sans); font-size: 13px; color: var(--text);
+  background: var(--surface); outline: none; transition: border-color 0.12s;
+}
+.signoff-field input:focus, .signoff-field textarea:focus { border-color: var(--accent); }
+.signoff-field textarea { height: auto; padding: 8px 11px; resize: vertical; min-height: 100px; line-height: 1.55; box-sizing: border-box; }
+
+/* ── MANDATORY ITEMS ── */
+.mandatory-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px;
+  background: var(--gsoft); border-radius: var(--r); border: 1px solid #A8D9C1;
+  font-size: 13px; margin-bottom: 6px;
+}
+.mandatory-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+/* ── SERVICE CARD (new: repeatable per-service block) ── */
+.service-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); margin-bottom: 18px; overflow: hidden; }
+.service-card-head {
+  padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--s2);
+  display: flex; align-items: center; gap: 10px;
+}
+.service-card-head .service-icon { font-size: 16px; }
+.service-card-head .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.service-card-body { padding: 20px; }
+.service-field { margin-bottom: 18px; }
+.service-field:last-child { margin-bottom: 0; }
+.service-field-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.service-field-hint { font-size: 12px; color: var(--t3); margin-bottom: 8px; line-height: 1.5; }
+.service-field input[type="text"] {
+  width: 100%; height: 36px; padding: 0 12px;
+  border: 1px solid var(--border); border-radius: var(--r);
+  font-family: var(--sans); font-size: 13px; color: var(--text);
+  background: var(--surface); outline: none; transition: border-color 0.12s;
+}
+.service-field input[type="text"]:focus { border-color: var(--accent); }
+.service-field input[type="text"]::placeholder { color: var(--t3); }
+.service-field textarea {
+  width: 100%; min-height: 140px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: var(--r);
+  font-family: var(--sans); font-size: 13px; line-height: 1.6;
+  background: var(--surface); color: var(--text); resize: vertical; outline: none;
+  box-sizing: border-box;
+}
+.service-field textarea::placeholder { color: var(--t3); font-style: italic; }
+
+/* ── PILL CHOICES (compact inline selector for Yes/No or short options) ── */
+.pill-choices { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  height: 32px; padding: 0 14px; border-radius: 16px;
+  font-size: 12.5px; font-weight: 500; font-family: var(--sans);
+  border: 1px solid var(--border); background: var(--surface); color: var(--t2);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+  transition: all 0.12s; white-space: nowrap; user-select: none;
+}
+.pill:hover { border-color: var(--bstrong); color: var(--text); background: var(--s2); }
+.pill.selected { border-color: var(--accent); background: var(--asoft); color: var(--adark); font-weight: 600; }
+.pill-desc { font-weight: 400; color: var(--t2); font-size: 11.5px; }
+.pill.selected .pill-desc { color: var(--adark); opacity: 0.8; }
+
+/* ── SUB-TAB STRIP (horizontal tabs within a section) ── */
+.tab-strip {
+  display: flex; gap: 0; padding: 0; background: transparent;
+  border-radius: 0; margin-bottom: 20px; overflow-x: auto;
+  border: none; border-bottom: 1px solid var(--border);
+}
+.tab-strip::-webkit-scrollbar { display: none; }
+.tab-pill {
+  height: 38px; padding: 0 18px; border-radius: 0;
+  font-size: 13px; font-weight: 500; font-family: var(--sans);
+  border: none; background: transparent; color: var(--t2);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tab-pill:hover { color: var(--text); }
+.tab-pill.active { color: var(--accent); font-weight: 600; border-bottom-color: var(--accent); }
+
+/* ── TAB CONTENT PANELS ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── SECTION SEPARATOR INSIDE TABS ── */
+.svc-sep {
+  display: flex; align-items: center; gap: 10px;
+  margin: 24px 0 16px; padding: 0;
+}
+.svc-sep span {
+  font-size: 10px; font-weight: 700; color: var(--t3);
+  text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
+}
+.svc-sep::before, .svc-sep::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-name">MoeGo AI Receptionist</div>
+    <div class="logo-sub">Setup Review</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Start</div>
+    <a class="nav-item active" onclick="show('welcome')" href="#">
+      <span class="nav-dot"></span>Overview
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Knowledge Base</div>
+    <a class="nav-item" onclick="show('a1-identity')" href="#"><span class="nav-dot"></span>Identity &amp; Hours</a>
+    <a class="nav-item" onclick="show('a2-services')" href="#"><span class="nav-dot"></span>Services &amp; Pricing</a>
+    <a class="nav-item" onclick="show('a3-health')" href="#"><span class="nav-dot"></span>Health &amp; Eligibility</a>
+    <a class="nav-item" onclick="show('a4-booking')" href="#"><span class="nav-dot"></span>Policies</a>
+    <a class="nav-item" onclick="show('a5-discounts')" href="#"><span class="nav-dot"></span>Discounts</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Your AI</div>
+    <a class="nav-item" data-p2="p2-brand" onclick="showPart2Tab('p2-brand', this)" href="#"><span class="nav-dot"></span>Brand &amp; Voice</a>
+    <a class="nav-item" data-p2="p2-booking" onclick="showPart2Tab('p2-booking', this)" href="#"><span class="nav-dot"></span>Booking</a>
+    <a class="nav-item" data-p2="p2-upsell" onclick="showPart2Tab('p2-upsell', this)" href="#"><span class="nav-dot"></span>Upsell</a>
+    <a class="nav-item" data-p2="p2-escalation" onclick="showPart2Tab('p2-escalation', this)" href="#"><span class="nav-dot"></span>Escalation</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Scenarios</div>
+    <a class="nav-item" onclick="show('m3-booking')" href="#"><span class="nav-dot"></span>Booking</a>
+    <a class="nav-item" onclick="show('m3-inquiry')" href="#"><span class="nav-dot"></span>Inquiry</a>
+    <a class="nav-item" onclick="show('m3-escalation')" href="#"><span class="nav-dot"></span>Escalation</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Finish</div>
+    <a class="nav-item" onclick="show('signoff')" href="#"><span class="nav-dot"></span>Review &amp; Sign Off</a>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-bc">
+      <span id="locationDisplay">Pete and Mac's Avondale</span>
+      <span class="sep">›</span>
+      <span class="cur" id="topCurrent">Overview</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="navPrev()">← Back</button>
+      <button class="btn btn-primary" onclick="navNext()">Continue →</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════════════════════════════════
+       WELCOME
+  ══════════════════════════════════════ -->
+  <div class="section active" id="section-welcome">
+    <div class="page-header">
+      <span class="page-tag">MoeGo AI Receptionist</span>
+      <div class="page-title">Make your AI uniquely yours.</div>
+      <div class="page-desc">Your brand, your tone, your workflow — let's make sure your AI represents everything that makes your business unique.</div>
+    </div>
+
+    <div class="hero">
+      <h1 id="welcomeTitle">Welcome, Pete and Mac's Avondale!</h1>
+      <p class="hero-desc">Good news — we've already pulled your business info from MoeGo, so a lot of the groundwork is done. What we need from you is simple: read through what we've prepared, fix anything that doesn't look right, and tell us how you'd like the AI to handle different situations. The whole thing takes about 15–20 minutes.</p>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">Part 1</div>
+          <div class="step-name">Knowledge Base</div>
+          <div class="step-desc">Everything the AI knows — your services, pricing, hours, policies, and health requirements. We've pre-filled most of it. Just make sure it's accurate.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Part 2</div>
+          <div class="step-name">AI Configuration</div>
+          <div class="step-desc">How your AI sounds, books, sells, and handles problems — brand voice, booking flow, upsell approach, and escalation rules.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Part 3</div>
+          <div class="step-name">Scenario Review</div>
+          <div class="step-desc">We've mapped out real call scenarios your AI will handle. Walk through each one — approve it if it looks good, or flag it so we can adjust.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       A.1 IDENTITY & HOURS
+  ══════════════════════════════════════ -->
+  <div class="section" id="section-a1-identity">
+    <div class="page-header">
+      <span class="page-tag">Plane A · Knowledge Base</span>
+      <div class="page-title">A.1 Identity & Hours</div>
+      <div class="page-desc">Basic facts about your location. The AI uses these for every call.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Business Identity</div></div>
+      <table class="field-table">
+        <tr><td class="field-label">Business name</td><td class="field-value"><input type="text" value="Pete & Mac's Pet Resort"></td></tr>
+        <tr><td class="field-label">Part of (franchise / corporate)</td><td class="field-value"><input type="text" value="Best Friends Pet Care"></td></tr>
+        <tr><td class="field-label">MoeGo location ID</td><td class="field-value"><input type="text" value="232"></td></tr>
+        <tr><td class="field-label">Address</td><td class="field-value"><input type="text" value="13034 W Rancho Santa Fe Blvd, Suite 103, Avondale, AZ 85392"></td></tr>
+        <tr><td class="field-label">Main phone</td><td class="field-value"><input type="text" value="(623) 536-2303"></td></tr>
+        <tr><td class="field-label">Email</td><td class="field-value"><input type="text" value="avo@bestfriends.net"></td></tr>
+        <tr><td class="field-label">Website</td><td class="field-value"><input type="text" value="petemacs.com"></td></tr>
+        <tr><td class="field-label">Online booking URL</td><td class="field-value"><input type="text" placeholder="MoeGo booking link or website" value="https://booking.moego.pet/ol/PeteMacsAvondale/landing"></td></tr>
+        <tr><td class="field-label">Manager / owner</td><td class="field-value"><input type="text" value="Krystle Humes (Manager)"></td></tr>
+        <tr><td class="field-label">Manager contact</td><td class="field-value"><input type="text" value="khumes@bestfriends.net"></td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Operating Hours</div></div>
+      <table class="field-table">
+        <tr><td class="field-label">Monday – Friday</td><td class="field-value"><input type="text" value="6:30 AM – 7:00 PM"></td></tr>
+        <tr><td class="field-label">Saturday</td><td class="field-value"><input type="text" value="8:00 AM – 5:00 PM"></td></tr>
+        <tr><td class="field-label">Sunday</td><td class="field-value"><input type="text" value="8:00 AM – 5:00 PM"></td></tr>
+        <tr><td class="field-label">Holidays</td><td class="field-value"><input type="text" placeholder="Holiday hours or 'Closed'"></td></tr>
+        <tr><td class="field-label">Standard checkout / pickup</td><td class="field-value"><input type="text" value="12:00 PM Noon"></td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Service Schedules &amp; Closed Dates</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">List any services with hours different from your general schedule, plus your closed dates / holidays.</div>
+        <textarea>SERVICE-SPECIFIC HOURS
+• Grooming: Tuesday – Saturday, 9:00 AM – 4:00 PM (Cassandra, ~4-5 haircuts/day capacity)
+• Boarding drop-off: Mon–Fri 6:30 AM – 6:30 PM, Sat–Sun 8:00 AM – 5:00 PM
+• Training: By arrangement — clients contact location directly
+
+CLOSED DATES
+• New Year's Day — January 1
+• Easter Sunday
+• Memorial Day — last Monday of May
+• Independence Day — July 4
+• Labor Day — first Monday of September
+• Thanksgiving Day
+• Christmas Day — December 25</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       A.2 SERVICES & PRICING
+  ══════════════════════════════════════ -->
+  <div class="section" id="section-a2-services">
+    <div class="page-header">
+      <span class="page-tag">Plane A · Knowledge Base</span>
+      <div class="page-title">A.2 Services &amp; Pricing</div>
+      <div class="page-desc">Everything your location offers, with current pricing. Write naturally — the AI quotes prices exactly, so make sure they're correct. If a service isn't offered, leave that card blank.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Boarding</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Describe your boarding accommodations, room types, pricing, what's included, and any room-specific rules. Include cat boarding if offered. Also note: what should owners bring for their pet's stay? What's NOT accepted (beds, toys, etc.)?</div>
+        <textarea>DOG BOARDING — ROOM TYPES
+• Casita — $59.50/night. Small room (5'×3'), one dog only, up to 25 lbs. Includes standard cot bed.
+• Cabana — $63.50/night. Medium room (6'×4'), multiple dogs from same household OK (combined weight ≤60 lbs). Standard cot bed.
+• Casa Grande — $69.00/night. Large room (9'×5'), no weight limit, multiple dogs OK. Standard cot bed.
+• Suite — $74.00/night. Large room (9'×5'), no weight limit. Wall mural, TV, cot bed, optional upgraded mattress.
+
+Room sharing: Pets must be from the same household. Intact dogs can share with owner approval only. Feeding is always separated. If aggression occurs, pets are separated and future stays may require separate rooms.
+
+CAT BOARDING
+$37.00/night per cat in a 3'×3' condo. Spay/neuter not required.
+
+LATE CHECKOUT
+See A.4 Surcharges & Fees for late checkout pricing.
+
+WHAT TO BRING
+Solid 4-6 ft lead, quick buckle collar or harness, pre-portioned dry or canned food, medication in original container with instructions, 1-2 Kong/rubber toys, slow feed or elevated bowls.
+
+NOT ACCEPTED
+Retractable leads, beds/bedding/fabric/clothing, plush toys or toys in poor condition.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Daycare</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Describe your daycare / group play services, packages, pricing, evaluation requirements, and any alternatives for dogs that don't qualify for group play.</div>
+        <textarea>GROUP PLAY
+Runs 8:00 AM – 5:00 PM daily. Minimum age 16 weeks. Spay/neuter required after 6 months.
+
+New dogs need a complimentary first-day evaluation — see A.3 Health & Eligibility for full process. Dogs that don't pass group play are offered Independent/Day Boarding play at no extra cost.
+
+DAYCARE PACKAGES
+• 5-Day Pack — $89.50 (expires in 7 days, $160 value)
+• 10-Day Pack — $265.00 (expires in 30 days, $320 value)
+• 20-Day Pack — $469.50 (expires in 60 days, $640 value)
+• 30-Day Pack — $569.50 (expires in 60 days, $960 value)</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Grooming</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Describe your grooming services, pricing by pet size, à la carte options, specials, and any limitations. If grooming isn't offered at this location, leave blank.</div>
+        <textarea>GROOMER: Cassandra — see A.1 Service Schedules for hours and capacity.
+
+FULL GROOM (starting at): Small $79.50 · Medium $89.50 · Large $106.00 · Extra Large $142.00
+DE-SHED (starting at): Small $85.00 · Medium $95.50 · Large $106.00 · Extra Large $127.00
+BATH & BRUSH (starting at): Small $63.50 · Medium $74.00 · Large $85.00 · Extra Large $95.50
+
+All full-service grooms include ear cleaning, nail trim & buff, and gland expression upon request.
+
+À LA CARTE
+• Anal Gland Expression — $21.00
+• Ear Cleaning — $21.00
+• Teeth Brushing — $21.00
+• Nail Trim — $21.00
+• Pawdicure — $26.50
+
+WEEKLY SPECIALS
+• Toe-Tapping Tuesday — $16.00 nail trims
+• Tooth Fairy Friday — $16.00 toothbrushing
+• Wash-Me Wednesday — $16.00 wash & towel dry (select Wednesdays)
+
+CAT GROOMING
+Limited to bath & nail trim only — no cat haircuts. $80.00, temperament dependent.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Training</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Describe training programs, pricing, and how clients schedule. If training inquiries transfer to your team, leave blank and set routing in the Services section.</div>
+        <textarea>TRAINING PROGRAMS
+• Board & Train — $395 (additional to boarding rate). Minimum 7-day boarding stay, includes 5 days of training.
+• Play & Train — $250. 5 daycare days + training.
+• Private Training — $100 per one-hour session.
+
+Scheduling: Clients contact the location directly to arrange training.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Add-Ons &amp; Extras</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Services that attach to a primary booking (boarding, daycare). Include any protection plans, insurance products, or wellness programs.</div>
+        <textarea>BOARDING ADD-ONS
+• Pupdate Package — $10.50/stay. AM & PM photo updates sent to owner.
+• Enrichment Activity — $15.00/day.
+• Extra Potty Break — $10.50/stay. Two additional breaks beyond standard schedule.
+• House Food (Wellness brand) — $5.50/day. For pets without their own food.
+• Nightly Treat — $3.00/night. Peanut butter Kong, in-house ice cream, or alternating.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Other Services</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Any services not covered above — pet taxi, swimming, retail, specialty programs, etc.</div>
+        <textarea placeholder="Describe any additional services and pricing here..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       A.3 HEALTH & ELIGIBILITY
+  ══════════════════════════════════════ -->
+  <div class="section" id="section-a3-health">
+    <div class="page-header">
+      <span class="page-tag">Plane A · Knowledge Base</span>
+      <div class="page-title">A.3 Health &amp; Eligibility</div>
+      <div class="page-desc">Vaccination requirements, age rules, and eligibility restrictions for each service.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Vaccination Requirements</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Required vaccines by pet type, documentation rules, and timing requirements.</div>
+        <textarea>Dogs (16 weeks and older): Rabies, DHPP (Distemper/Parvo), and Bordetella — all must be current and administered by a licensed veterinarian. No handwritten records accepted. City/town license is not required.
+Cats: Rabies and FVRCP, current, licensed vet administered.
+Flea & tick prevention required for all pets — proof on file or treatment available at drop-off.
+
+TIMING
+• Bordetella must be given at least 14 days before the service date.
+• Most recent DHPP must be within 4 weeks of service.
+• Younger puppies (12-15 weeks) may board with restrictions if these timing requirements are met.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Age, Spay/Neuter &amp; Species</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Minimum age per service, spay/neuter rules, and which species you accept.</div>
+        <textarea>AGE REQUIREMENTS
+• Boarding: Minimum 12-15 weeks (with vaccine restrictions above).
+• Daycare / group play: Minimum 16 weeks.
+• Puppies 16 weeks to 6 months may participate in group play.
+• After 6 months: must be spayed/neutered for group play.
+
+SPECIES
+Dogs and cats only — no small animals, birds, or exotic pets.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Breed, Size &amp; Senior Pets</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Any breed or size restrictions, plus special rules for senior or aged pets.</div>
+        <textarea>BREED & SIZE RESTRICTIONS
+None. All breeds accepted. Room assignment based on pet size.
+
+SENIOR / AGED PETS
+[If your location has special requirements for senior pets — e.g., age thresholds, questionnaires, vet clearance — describe them here.]</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Conditions &amp; Behavioral Policy</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Medical conditions or situations you cannot accommodate, and what happens if behavioral issues arise during a stay.</div>
+        <textarea>CONDITIONS WE CANNOT ACCOMMODATE
+[List any medical conditions, medications, or situations your location cannot safely handle — e.g., untreated seizure disorders, injectable medications, open wounds/stitches, pets requiring sedation, more than 4 types of medication, pregnant/nursing pets, etc.]
+
+BEHAVIORAL POLICY
+If aggression is observed during a stay, pets are separated immediately. Future stays may require a solo room or be declined.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Evaluation Process</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Some services need a meet-and-greet or temperament check before a pet can participate. Describe each evaluation — what it involves, how long it takes, and what happens if the pet doesn't pass.</div>
+        <textarea>DAYCARE (NEW DOGS)
+Complimentary first-day evaluation: controlled leash introduction, 15-minute supervised group observation by 2-3 trained team members. Drop off by 8:00 AM. If the dog does not pass, Independent/Day Boarding play is offered instead (two 30-min 1-on-1 sessions daily, no extra cost).
+
+BOARDING
+[Does your location require a meet-and-greet or trial stay for new boarding guests? If so, describe the process, scheduling, and what happens if the pet isn't a good fit.]
+
+GROOMING
+[Does your groomer do a temperament check or consultation before the first appointment? Any breeds or coat types that require a pre-visit assessment?]</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       A.4 POLICIES
+  ══════════════════════════════════════ -->
+  <div class="section" id="section-a4-booking">
+    <div class="page-header">
+      <span class="page-tag">Plane A · Knowledge Base</span>
+      <div class="page-title">A.4 Policies</div>
+      <div class="page-desc">Deposit, cancellation, and payment policies that apply to every booking.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Deposit Policy</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Per-service deposit requirements: what amount, when charged, refund conditions.</div>
+        <textarea>• Boarding: One-night deposit required to confirm reservation. Charged at time of booking.
+• Daycare: No deposit required.
+• Grooming: No deposit required.
+[Add deposit rules for any other services — include the amount or formula.]</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Cancellation &amp; No-Show</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Cancellation window, penalties, no-show forfeit rules.</div>
+        <textarea>Cancel at least 48 hours before the scheduled drop-off date for a full refund.
+Cancellations within 48 hours: deposit is non-refundable.
+No-shows forfeit the deposit.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Payment Methods</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Accepted payment types, when payment is due.</div>
+        <textarea>Credit card, debit card — collected via secure payment link (SMS). Payment is due in full at check-in.</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Surcharges &amp; Fees</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Peak/holiday pricing, late checkout fees, any other surcharges.</div>
+        <textarea>PEAK / HOLIDAY PRICING
+None — no seasonal or holiday surcharges at this location.
+
+LATE CHECKOUT
+$10 per pet if picked up after 3:00 PM (boarding only). Standard checkout is 12:00 PM Noon.</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       A.5 DISCOUNTS & PROMOTIONS
+  ══════════════════════════════════════ -->
+  <div class="section" id="section-a5-discounts">
+    <div class="page-header">
+      <span class="page-tag">Plane A · Knowledge Base</span>
+      <div class="page-title">A.5 Discounts &amp; Promotions</div>
+      <div class="page-desc">Active discounts, promotions, and complimentary perks. Who qualifies, what the amount is, and any restrictions.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Discounts &amp; Promotions</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">List all current discounts with qualifying criteria and amounts. Include any complimentary perks tied to stay length. Note restrictions (can't combine, excluded during peak, etc.). How the AI surfaces these is configured in the Services section.</div>
+        <textarea>ACTIVE DISCOUNTS
+• First daycare day — Complimentary for new guests (includes evaluation).
+• Military — 15% off. Active duty or veteran, self-identified.
+• First Responders — 10% off. Police, fire, paramedics.
+• Multi-Pet — First pet at full price, each additional pet 20% off.
+• Extended Stay — Stay 12 consecutive nights, 13th night is free.
+
+COMPLIMENTARY PERKS
+[If your location offers complimentary services based on stay length — e.g., free exit bath for stays of 3+ nights — describe them here. Include the qualifying threshold and what's included.]
+
+RESTRICTIONS
+Discounts cannot be combined. No holiday surcharges.</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PART 2 — AI CONFIGURATION
+══════════════════════════════════════ -->
+  <div class="section" id="section-part2">
+    <div class="page-header">
+      <span class="page-tag">Part 2 · Your AI</span>
+      <div class="page-title">AI Configuration</div>
+      <div class="page-desc">How your AI sounds, books, sells, and handles problems. Click each tab to configure.</div>
+    </div>
+
+    <div class="tab-panel active" data-p2="p2-brand">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Voice &amp; Personality</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Think about your best front-desk person — the one callers love. What's their vibe? How do they make people feel? What words do they reach for, and what would they never say? That's what we're capturing here.</div>
+        <textarea>WHO WE ARE
+We're a pet resort, not a kennel. Every interaction should feel like talking to someone who genuinely loves animals and is thrilled the caller is trusting us with their pet. Warm, knowledgeable, easygoing — not scripted or corporate.
+
+HOW WE SOUND
+Warm and relaxed. Like a helpful friend who happens to know everything about our resort. Think "friendly local expert."
+
+WORDS WE USE
+• "Of course!" (never "certainly")
+• "What we can do is…" (never "per our policy")
+• "I'd be happy to help with that"
+• "Great news — …"
+• Refer to stays as "visits" or "vacations," not "stays" or "bookings"
+• Always use the pet's name once known. "How's Cooper doing?" not "How's the dog?" Pets are guests, not inventory.
+
+WORDS WE NEVER USE
+"unfortunately" · "certainly" · "representative" · "per our policy" · "I understand your concern" · "for security purposes" · "kennel"</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Safety Rules</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Every team has a few hard lines — things you'd never want said on a call, no matter what. What are yours? These rules override everything else.</div>
+        <textarea>NEVER GUESS
+If the AI is unsure about availability, pricing, policies, or any factual detail — it does NOT guess or improvise.
+What the AI says: "Let me have someone confirm that for you — can I connect you with our team?"
+
+NEVER TAKE CREDIT CARD INFO OVER THE PHONE
+The AI NEVER collects, repeats, or acknowledges credit card numbers spoken aloud. All payment is via secure link.
+
+VERIFY THE CALLER
+Before sharing booking or stay details, verify the caller matches the booking contact (phone number or name confirmation). Protects privacy.</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Phone vs. Text</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Your AI's personality stays the same everywhere — but a phone call and a text message feel different. How should it adjust its style between the two?</div>
+        <textarea>ON THE PHONE
+Read back key details to confirm. Never sound rushed or say "I don't know" without offering to find out. Natural pacing — let the caller finish.
+
+ON TEXT / CHAT
+Keep messages short and clear. No over-explaining. No excessive emojis. Confirm important details in plain language.
+
+KEY DIFFERENCE
+Phone: verbal confirmation, conversational pace. Text: concise, scannable, same warmth in fewer words.</textarea>
+      </div>
+    </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">The Greeting</div></div>
+        <div class="card-body">
+          <div class="textarea-prompt">The phone just rang. What does your AI say first? This is the caller's first impression — it sets the tone for everything.</div>
+          <textarea>"Thank you for calling Pete & Mac's in Avondale. How can I help you today?"
+
+LEGAL NOTICE (if required)
+[If your location requires a recording disclosure at the start of calls, write it here. Otherwise leave blank.]</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">After Hours</div></div>
+        <div class="card-body">
+          <div class="textarea-prompt">It's 9 PM and someone calls. Your location is closed. What can the AI still do? What should it tell the caller?</div>
+          <textarea>WHAT CHANGES
+Greet and state that the location is currently closed. State current hours.
+
+WHAT THE AI STILL DOES
+Offer to book or answer questions. Mention they can leave a message for callback.
+
+CALLBACK PROMISE
+Give a specific follow-up time: "Our team will get back to you at 6:30 AM tomorrow."</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Confirming the Booking</div></div>
+        <div class="card-body">
+          <div class="textarea-prompt">The booking is done. What does the AI say to confirm? What goes in the confirmation text?</div>
+          <textarea>VERBAL RECAP
+Read back key details: dates, room/service, price, deposit if applicable.
+
+CONFIRMATION TEXT
+Send text message with reservation dates, room type, price, deposit amount, drop-off time, and what to bring.
+
+REMINDERS
+[Describe any pre-stay reminders — e.g., text 24 hours before drop-off with check-in instructions.]</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Forms & Paperwork</div></div>
+        <div class="card-body">
+          <div class="textarea-prompt">Do some callers need forms before their visit — registration, waivers, releases? Which forms go to which callers?</div>
+          <textarea>FIRST-TIME CLIENTS
+• New client registration form (via MoeGo automated link)
+• Service agreement / liability waiver
+
+SENIOR PETS (age 7+)
+• Senior pet release form
+
+DAYCARE EVALUATION
+• No separate form — evaluation is part of first-day check-in
+
+DELIVERY
+All forms sent via MoeGo text message link.
+"I'll send over some quick paperwork to [phone number] — just tap the link to fill it out before your visit."
+
+IF FORMS NOT COMPLETED
+AI does NOT block the booking. Note on reservation that forms are pending. Staff follows up at check-in.</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Goodbye</div></div>
+        <div class="card-body">
+          <div class="textarea-prompt">How does the AI close the call? Every caller should know exactly what happens next.</div>
+          <textarea>THE CLOSE
+"Is there anything else I can help with today?"
+"Thank you for calling Pete & Mac's — have a great day!"
+
+IF CALLER HAS ANOTHER QUESTION
+If the caller says yes, help them with their next request. No need to re-greet — just ask "What else can I help with?"
+
+NEXT STEP BY CALL TYPE
+• Booking: "You'll get a confirmation text shortly with all the details."
+• Question: "If you decide to book, just give us a call back anytime."
+• Transfer: "I've passed everything along — [person] will be right with you."
+• After-hours: "Our team will get back to you at [time] tomorrow."</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-p2="p2-booking">
+    <div class="tab-strip" id="svc-tabs">
+      <button class="tab-pill active" onclick="showSvc('dog-boarding',this)">Dog Boarding</button>
+      <button class="tab-pill" onclick="showSvc('cat-boarding',this)">Cat Boarding</button>
+      <button class="tab-pill" onclick="showSvc('daycare',this)">Daycare</button>
+      <button class="tab-pill" onclick="showSvc('grooming',this)">Grooming</button>
+      <button class="tab-pill" onclick="showSvc('training',this)">Training</button>
+      <button class="tab-pill" onclick="showSvc('add-new',this)" style="color:var(--accent)">+ Add</button>
+    </div>
+
+    <!-- ─── Dog Boarding ─── -->
+    <div class="tab-panel active" data-svc="dog-boarding">
+      <div class="service-field">
+        <div class="service-field-label">When a caller wants to book, the AI should:</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectBookingPath(this)">Book directly</span>
+          <span class="pill" onclick="selectBookingPath(this)">Collect & hand off</span>
+          <span class="pill" onclick="selectBookingPath(this)">Always transfer</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Evaluation needed?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit required?</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Yes</span>
+          <span class="pill" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Recommended add-on / upgrade</div>
+        <textarea>Suite upgrade for stays 3+ nights or anxious pets. Pupdate Package. Enrichment Activity. Extra Potty Break for 3+ night stays.</textarea>
+      </div>
+      <div class="service-field collect-field" style="display:none">
+        <div class="service-field-label">What info should the AI collect before handing off?</div>
+        <textarea>Check-in and check-out dates (with day-of-week). Room type recommendation based on pet size and stay length. Feeding schedule, medication, emergency contact. Long-stay notes if applicable.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to (if AI can't handle)</div>
+        <input type="text" value="(623) 536-2303 — front desk">
+      </div>
+    </div>
+
+    <!-- ─── Cat Boarding ─── -->
+    <div class="tab-panel" data-svc="cat-boarding">
+      <div class="service-field">
+        <div class="service-field-label">When a caller wants to book, the AI should:</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectBookingPath(this)">Book directly</span>
+          <span class="pill" onclick="selectBookingPath(this)">Collect & hand off</span>
+          <span class="pill" onclick="selectBookingPath(this)">Always transfer</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Evaluation needed?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit required?</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Yes</span>
+          <span class="pill" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Recommended add-on / upgrade</div>
+        <textarea>Suite upgrade. Pupdate Package.</textarea>
+      </div>
+      <div class="service-field collect-field" style="display:none">
+        <div class="service-field-label">What info should the AI collect before handing off?</div>
+        <textarea>Check-in and check-out dates. Feeding schedule, medication, emergency contact.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to (if AI can't handle)</div>
+        <input type="text" value="(623) 536-2303 — front desk">
+      </div>
+    </div>
+
+    <!-- ─── Daycare ─── -->
+    <div class="tab-panel" data-svc="daycare">
+      <div class="service-field">
+        <div class="service-field-label">When a caller wants to book, the AI should:</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectBookingPath(this)">Book directly</span>
+          <span class="pill" onclick="selectBookingPath(this)">Collect & hand off</span>
+          <span class="pill" onclick="selectBookingPath(this)">Always transfer</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Evaluation needed for first-time clients?</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Yes</span>
+          <span class="pill" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">How should the AI handle new-client evaluations?</div>
+        <textarea>Book the eval day and frame it positively: "The first day is complimentary — it's a chance for us to get to know [pet name] and make sure group play is a great fit."
+If the dog doesn't pass, offer the alternative warmly: "We have a great 1-on-1 option that a lot of dogs actually love."
+See A.3 for eval process details.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit required?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Recommended add-on / upgrade</div>
+        <textarea>Returning guests: Enrichment Daycare upgrade.
+New clients: none for first visit — focus on eval.</textarea>
+      </div>
+      <div class="service-field collect-field" style="display:none">
+        <div class="service-field-label">What info should the AI collect before handing off?</div>
+        <textarea>Returning: confirm schedule (single day or recurring), drop-off time.
+New: confirm vaccines, book eval day, explain eval is free, share drop-off time and pack schedule.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to (if AI can't handle)</div>
+        <input type="text" value="(623) 536-2303 — front desk">
+      </div>
+    </div>
+
+    <!-- ─── Grooming ─── -->
+    <div class="tab-panel" data-svc="grooming">
+      <div class="service-field">
+        <div class="service-field-label">When a caller wants to book, the AI should:</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectBookingPath(this)">Book directly</span>
+          <span class="pill" onclick="selectBookingPath(this)">Collect & hand off</span>
+          <span class="pill" onclick="selectBookingPath(this)">Always transfer</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Evaluation needed?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit required?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Recommended add-on / upgrade</div>
+        <textarea>Full groom upgrade if pet hasn't been groomed in 60+ days.</textarea>
+      </div>
+      <div class="service-field collect-field" style="display:none">
+        <div class="service-field-label">What info should the AI collect before handing off?</div>
+        <textarea>Appointment date + time. Service tier (bath vs. full groom) — recommend based on breed, last groom date, or caller preference. Pricing by pet size.</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to (if AI can't handle)</div>
+        <input type="text" value="Cassandra (Tue–Sat) — grooming team">
+      </div>
+    </div>
+
+    <!-- ─── Training ─── -->
+    <div class="tab-panel" data-svc="training">
+      <div class="service-field">
+        <div class="service-field-label">When a caller wants to book, the AI should:</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectBookingPath(this)">Book directly</span>
+          <span class="pill" onclick="selectBookingPath(this)">Collect & hand off</span>
+          <span class="pill selected" onclick="selectBookingPath(this)">Always transfer</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Evaluation needed?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit required?</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Yes</span>
+          <span class="pill selected" onclick="selectPill(this)">No</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Recommended add-on / upgrade</div>
+        <textarea placeholder="Any upsell or add-on the AI should mention for this service."></textarea>
+      </div>
+      <div class="service-field collect-field" style="display:none">
+        <div class="service-field-label">What info should the AI collect before handing off?</div>
+        <textarea placeholder="Info the AI should gather before passing to staff."></textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to (if AI can't handle)</div>
+        <input type="text" value="Location staff — direct line">
+      </div>
+    </div>
+
+    <!-- ─── Add New ─── -->
+    <div class="tab-panel" data-svc="add-new">
+      <div class="callout info" style="margin-bottom:18px;">
+        <span class="callout-icon">+</span>
+        <span>Add a service we missed — fill in what the AI should know about it.</span>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Service name</div>
+        <input type="text" placeholder="e.g., Spa Treatments, Puppy Socialization, Pet Taxi...">
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Can AI book directly? Requirements? What info to collect?</div>
+        <textarea placeholder="Describe how this service works and what the AI should do when someone asks about it."></textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Transfer to (if AI can't handle)</div>
+        <input type="text" placeholder="Name / phone / role">
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Modifications &amp; Cancellations</div></div>
+        <div class="card-body">
+          <div class="textarea-prompt">When a caller needs to reschedule, cancel, or extend an existing booking — what can the AI do on its own?</div>
+          <div class="service-field">
+            <div class="service-field-label">Can the AI reschedule, cancel, or extend bookings directly?</div>
+            <div class="pill-choices">
+              <span class="pill selected" onclick="selectPill(this)">Yes — AI handles in MoeGo</span>
+              <span class="pill" onclick="selectPill(this)">No — take a message</span>
+            </div>
+          </div>
+          <div class="service-field">
+            <div class="service-field-label">Reschedule / cancel / extend rules</div>
+            <textarea>RESCHEDULE: Collect new dates, check availability, offer two closest alternatives if unavailable. Within 48 hours → mention change policy first. Always read back updated booking.
+
+CANCEL: Mention cancellation policy BEFORE executing. One rebook offer: "Would you like to book a different date instead?" If no, move on.
+
+EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doing great here, we're happy to keep them longer!" Always communicate price impact before executing. If full, offer alternatives or escalate.</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <div class="tab-panel" data-p2="p2-upsell">
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">Upgrade Paths</div></div>
+    <div class="card-body">
+      <div class="textarea-prompt">The AI reviews each customer's history in MoeGo and offers <strong>one relevant upgrade</strong> per call. List every "from → to" path below — include the trigger condition and how the AI should position it. Edit freely to match your business.</div>
+      <textarea class="upsell-main-textarea" style="min-height: 380px; width: 100%; resize: vertical; box-sizing: border-box;">ROOM UPGRADES
+Standard Boarding → Luxury Suite
+  Trigger: 3+ night stays, anxious pets, or caller mentions wanting extra comfort.
+  Script: "A lot of our guests in for longer stays really love the luxury suite — it's a bigger space with a raised bed and a camera so you can check in. Would you like to take a look at that option?"
+
+GROOMING UPGRADES
+Basic Bath → Full Groom
+  Trigger: Pet hasn't been groomed in 60+ days, or caller mentions matting/shedding.
+  Script: "Since it's been a little while, would you like to add a full groom? That way Cooper goes home looking and feeling great."
+
+SERVICE ADD-ONS (pick the most relevant one)
+No Pupdate → Pupdate Package
+  Trigger: Any boarding stay.
+  Script: "Would you like daily photo and video updates of Cooper? It's our Pupdate Package."
+
+No Enrichment → Enrichment Activity
+  Trigger: Any boarding or daycare stay, especially if Pupdate already included or declined.
+
+No Training Eval → Free Training Evaluation
+  Trigger: Pet has never had a training evaluation on file.
+  Script: "We also offer a free training evaluation — it's a great way to see how [pet name] does. Want me to add that?"
+
+CROSS-SERVICE
+Boarding only → Grooming during stay
+  Trigger: Pet is boarding 2+ nights and groomer has availability (Cassandra, Tue–Sat).
+  Script: "Since [pet name] is staying with us, would you like to have them groomed during their visit? That way they go home looking great."
+
+Daycare single day → Daycare package
+  Trigger: Caller books 2+ single daycare days within 30 days.
+  Script: "Since [pet name] comes in pretty regularly, our daycare packages might save you some money — want me to walk you through the options?"</textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title">What do you want the AI to do?</div></div>
+    <div class="card-body">
+      <div class="textarea-prompt">Describe how you want the AI to handle upsell and promotions — your goals, what to push, when to back off, or anything else we should know.</div>
+      <textarea class="upsell-custom-textarea" placeholder="e.g. I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls…" style="min-height: 160px; width: 100%; resize: vertical; box-sizing: border-box;"></textarea>
+    </div>
+  </div>
+
+    </div>
+
+    <div class="tab-panel" data-p2="p2-escalation">
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Upset Callers</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">A caller is angry or frustrated. The AI can't fix the problem — only a human can. But how the AI handles this moment matters. What should it do?</div>
+        <textarea>STEP 1 — LISTEN
+Let the caller express their concern fully. Do not interrupt.
+
+STEP 2 — ACKNOWLEDGE
+"I completely understand why that's frustrating."
+"That's definitely not the experience we want for [pet name]."
+
+STEP 3 — APOLOGIZE
+"I'm sorry about that — let me make sure the right person helps you with this."
+
+STEP 4 — TRANSFER WARMLY
+"I'm going to connect you with [manager/our team lead] who can look into this and make it right. Can I place you on a brief hold while I get them?"
+
+NEVER SAY
+"That's our policy" · "There's nothing I can do" · "You need to calm down" · "I'm just the AI"</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">When to Transfer Immediately</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">What situations are too important or sensitive for the AI? For each one, does the AI transfer now, or can it take a message?</div>
+        <textarea>TRANSFER NOW
+• Angry / upset caller → de-escalate, then transfer to manager
+• Caller demands a manager → transfer immediately, never argue
+• Pet injury or medical concern (pet currently in care) → URGENT — transfer to location staff immediately
+• Legal threat or mention of lawyer → transfer to manager, do not discuss liability
+• Media or press inquiry → transfer to corporate / owner, do not comment
+
+TAKE A MESSAGE (callback OK)
+• Billing disputes → note details, promise callback
+• Post-pickup concerns → note details, promise callback
+• Lost & found → note details, promise callback</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">How to Transfer</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">When the AI needs to hand off to your team, what does it say? How does it put someone on hold? What if no one picks up?</div>
+        <textarea>PLACING ON HOLD
+"Would it be OK if I place you on a brief hold while I [check on that / get the right person]?"
+Never place on hold without asking first.
+
+RETURNING FROM HOLD
+"Thanks for waiting — I appreciate your patience."
+
+TRANSFERRING
+"I'm going to connect you with [role] who can help you with that. Let me transfer you now."
+
+IF NO ONE PICKS UP
+"I wasn't able to reach [role] right now. Can I take your name and number so they can call you back shortly?"
+Capture: name, phone, reason for call, urgency level.
+Promise a specific callback window: "They'll get back to you within [X hours]."
+
+IF HOLD IS TOO LONG (30+ seconds)
+Check back: "I'm still working on getting [role] — thank you for your patience. Would you prefer to leave a message?"</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Transfer Directory</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Who handles what? List the people or roles the AI should transfer to, and when.</div>
+        <textarea>FRONT DESK / GENERAL
+Role: Front desk staff
+When: General questions AI can't answer, booking issues, schedule changes
+Contact: (623) 536-2303
+
+MANAGER
+Role: Location manager (Krystle Humes)
+When: Complaints, legal threats, escalations, injury reports
+Contact: khumes@bestfriends.net
+
+GROOMING
+Role: Grooming team (Cassandra)
+When: Grooming-specific scheduling, breed-specific questions
+Available: Tue–Sat
+
+CORPORATE / OWNER
+When: Media inquiries, legal matters, corporate policy questions
+Contact: [Fill in corporate contact]</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Technical Problems</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">What should the AI do if something breaks mid-call — it can't access the booking system, the call drops, or there's a technical issue?</div>
+        <textarea>SYSTEM UNAVAILABLE
+"I'm having a little trouble pulling that up right now. Let me take your information and have our team get back to you shortly."
+Capture all details. Never blame the technology or say "the system is down."
+
+CALL DROPS
+If the caller calls back: "Welcome back! I'm sorry about that — let me pick up right where we left off."
+Resume from last confirmed point. Don't make the caller repeat everything.
+
+ANYTHING UNEXPECTED
+Default to: capture information + promise callback. Never leave the caller hanging.</textarea>
+      </div>
+    </div>
+    </div>
+
+  </div>
+
+  <div class="section" id="section-m3-booking">
+    <div class="page-header">
+      <span class="page-tag">Part 3 · Scenarios</span>
+      <div class="page-title">Booking Scenarios</div>
+      <div class="page-desc">End-to-end booking flows: new &amp; returning customers, vaccines, special situations, upsell, modifications, grooming, and training.</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="rev-btn" onclick="toggleAllSc('sc-booking',false)" style="font-size:11px;">Expand All</button>
+      <button class="rev-btn" onclick="toggleAllSc('sc-booking',true)" style="font-size:11px;">Collapse All</button>
+    </div>
+    <div id="sc-booking"></div>
+  </div>
+
+  <div class="section" id="section-m3-inquiry">
+    <div class="page-header">
+      <span class="page-tag">Part 3 · Scenarios</span>
+      <div class="page-title">Inquiry &amp; Service Info Scenarios</div>
+      <div class="page-desc">Information-only calls, pricing questions, access edge cases, knowledge boundaries, and inquiry-to-booking conversions.</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="rev-btn" onclick="toggleAllSc('sc-inquiry',false)" style="font-size:11px;">Expand All</button>
+      <button class="rev-btn" onclick="toggleAllSc('sc-inquiry',true)" style="font-size:11px;">Collapse All</button>
+    </div>
+    <div id="sc-inquiry"></div>
+  </div>
+
+  <div class="section" id="section-m3-escalation">
+    <div class="page-header">
+      <span class="page-tag">Part 3 · Scenarios</span>
+      <div class="page-title">Escalation &amp; Safety Scenarios</div>
+      <div class="page-desc">Identity handling, safety guardrails, live-transfer escalation, and conversation quality checks.</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="rev-btn" onclick="toggleAllSc('sc-escalation',false)" style="font-size:11px;">Expand All</button>
+      <button class="rev-btn" onclick="toggleAllSc('sc-escalation',true)" style="font-size:11px;">Collapse All</button>
+    </div>
+    <div id="sc-escalation"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SIGN OFF
+  ══════════════════════════════════════ -->
+  <div class="section" id="section-signoff">
+    <div class="page-header">
+      <span class="page-tag">Finish</span>
+      <div class="page-title">Review & Sign Off</div>
+      <div class="page-desc">You're done with the heavy lifting. Before you submit, take a moment to flag anything you'd like us to look at. Once you sign off, we'll do final testing and confirm your go-live date — usually within 2–3 business days.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Anything you'd like us to know?</div></div>
+      <div class="card-body">
+        <div class="callout info">
+          <span class="callout-icon">i</span>
+          <span>Open questions, things you're not sure about, special situations with your customers, or anything about your business that didn't fit anywhere above — add it here and we'll address it before go-live.</span>
+        </div>
+        <textarea style="width: 100%; min-height: 90px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r); font-family: var(--sans); font-size: 13px; color: var(--text); background: var(--surface); outline: none; resize: vertical; line-height: 1.6;" placeholder="e.g. We sometimes get calls about group events or birthday parties — how should the AI handle those?"></textarea>
+      </div>
+    </div>
+
+    <div class="signoff-grid">
+      <div class="signoff-box">
+        <div class="signoff-box-title">Your Sign-Off</div>
+        <div class="signoff-field"><label>Your name</label><input type="text" placeholder="Full name"></div>
+        <div class="signoff-field"><label>Your title</label><input type="text" placeholder="e.g. Owner, General Manager"></div>
+        <div class="signoff-field"><label>Date</label><input type="date"></div>
+      </div>
+      <div class="signoff-box">
+        <div class="signoff-box-title">MoeGo Team</div>
+        <div class="signoff-field"><label>Onboarding lead</label><input type="text" placeholder="MoeGo team member name"></div>
+        <div class="signoff-field"><label>Target go-live date</label><input type="date"></div>
+        <div class="signoff-field"><label>Open items</label>
+          <textarea placeholder="Any outstanding items before go-live"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px; display: flex; gap: 10px; align-items: center;">
+      <button class="btn btn-primary" style="height: 40px; padding: 0 24px; font-size: 13.5px;" onclick="alert('Submitted! The MoeGo team will be in touch within 1 business day.')">Submit & Send to MoeGo</button>
+      <button class="btn btn-ghost" style="height: 40px;" onclick="alert('A copy will be emailed to you.')">Save as PDF</button>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<script>
+const ORDER = [
+  'welcome',
+  'a1-identity','a2-services','a3-health','a4-booking','a5-discounts',
+  'part2',
+  'm3-booking','m3-inquiry','m3-escalation',
+  'signoff'
+];
+const NAMES = {
+  'welcome': 'Overview',
+  'a1-identity': 'A.1 Identity & Hours',
+  'a2-services': 'A.2 Services & Pricing',
+  'a3-health': 'A.3 Health & Eligibility',
+  'a4-booking': 'A.4 Policies',
+  'a5-discounts': 'A.5 Discounts',
+  'part2': 'AI Configuration',
+  'm3-booking': 'Booking Scenarios',
+  'm3-inquiry': 'Inquiry Scenarios',
+  'm3-escalation': 'Escalation Scenarios',
+  'signoff': 'Sign Off'
+};
+const P2_NAMES = { 'p2-brand': 'Brand & Voice', 'p2-booking': 'Booking', 'p2-upsell': 'Upsell', 'p2-escalation': 'Escalation' };
+
+// ── LOCATION FROM URL + AUTO-SAVE (one form per location) ─────────
+const LOCATION_NAMES = { avondale: "Pete and Mac's Avondale", gilbert: "Pete and Mac's Gilbert" };
+function getLocationFromUrl() {
+  const p = new URLSearchParams(location.search);
+  const loc = (p.get('location') || '').trim().toLowerCase() || 'avondale';
+  return loc.replace(/[^a-z0-9-_]/g, '') || 'avondale';
+}
+function getLocationDisplayName(loc) {
+  return LOCATION_NAMES[loc] || (loc.charAt(0).toUpperCase() + loc.slice(1).replace(/[-_]/g, ' '));
+}
+function getStorageKey(loc) { return 'moego_onboarding_' + loc; }
+
+let _saveTimer = null;
+const SAVE_DEBOUNCE_MS = 500;
+function collectState() {
+  const content = document.querySelector('.content');
+  if (!content) return null;
+  const textareas = [].map.call(content.querySelectorAll('textarea'), t => t.value);
+  const inputs = [].map.call(content.querySelectorAll('input[type="text"], input[type="date"]'), i => i.value);
+  const pills = [].map.call(content.querySelectorAll('.pill-choices'), g => {
+    const idx = [].indexOf.call(g.querySelectorAll('.pill'), g.querySelector('.pill.selected'));
+    return idx >= 0 ? idx : 0;
+  });
+  const scenarioNotes = {};
+  content.querySelectorAll('.rev-note[id^="note-"]').forEach(n => { scenarioNotes[n.id] = n.value; });
+  const scenarioCollapsed = {};
+  content.querySelectorAll('.sc[id^="card-"]').forEach(sc => { scenarioCollapsed[sc.id] = sc.classList.contains('collapsed'); });
+  return {
+    current: typeof current !== 'undefined' ? current : 'welcome',
+    part2Tab: (document.querySelector('.nav-item[data-p2].active') || {}).getAttribute?.('data-p2') || 'p2-brand',
+    textareas,
+    inputs,
+    pills,
+    revState: typeof revState !== 'undefined' ? Object.assign({}, revState) : {},
+    scenarioNotes,
+    scenarioCollapsed
+  };
+}
+function applyState(data, loc) {
+  if (!data || !loc) return;
+  const content = document.querySelector('.content');
+  if (!content) return;
+  if (data.textareas) {
+    const els = content.querySelectorAll('textarea');
+    data.textareas.forEach((v, i) => { if (els[i]) els[i].value = v; });
+  }
+  if (data.inputs) {
+    const els = content.querySelectorAll('input[type="text"], input[type="date"]');
+    data.inputs.forEach((v, i) => { if (els[i]) els[i].value = v; });
+  }
+  if (data.pills) {
+    const groups = content.querySelectorAll('.pill-choices');
+    data.pills.forEach((idx, gi) => {
+      const g = groups[gi];
+      if (!g) return;
+      const pills = g.querySelectorAll('.pill');
+      pills.forEach((p, i) => p.classList.toggle('selected', i === idx));
+    });
+  }
+  if (data.revState && typeof revState !== 'undefined') {
+    Object.assign(revState, data.revState);
+    Object.keys(revState).forEach(id => {
+      const ok = document.getElementById('ok-' + id);
+      const fl = document.getElementById('fl-' + id);
+      if (ok && fl) {
+        ok.className = 'rev-btn' + (revState[id] === 'ok' ? ' ok' : '');
+        fl.className = 'rev-btn' + (revState[id] === 'fl' ? ' fl' : '');
+        ok.textContent = revState[id] === 'ok' ? 'Approved' : 'Approve';
+        fl.textContent = revState[id] === 'fl' ? 'Flagged' : 'Flag';
+      }
+    });
+  }
+  if (data.scenarioNotes) {
+    Object.keys(data.scenarioNotes).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = data.scenarioNotes[id];
+    });
+  }
+  if (data.scenarioCollapsed) {
+    Object.keys(data.scenarioCollapsed).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('collapsed', !!data.scenarioCollapsed[id]);
+    });
+  }
+  if (data.current) {
+    current = data.current;
+    if (current === 'part2') {
+      showPart2Tab(data.part2Tab || 'p2-brand', document.querySelector('.nav-item[data-p2="' + (data.part2Tab || 'p2-brand') + '"]'));
+    } else {
+      show(current);
+    }
+  }
+}
+function persistState() {
+  const loc = getLocationFromUrl();
+  const key = getStorageKey(loc);
+  try {
+    const state = collectState();
+    if (state) localStorage.setItem(key, JSON.stringify(state));
+  } catch (e) {}
+}
+function scheduleSave() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(persistState, SAVE_DEBOUNCE_MS);
+}
+
+// ── SCENARIO STYLES (injected once) ──────────────────────────────
+(function injectScenarioStyles() {
+  const s = document.createElement('style');
+  s.textContent = `
+    .epic-sep { display:flex;align-items:center;gap:10px;margin:26px 0 13px }
+    .epic-sep .el { flex:1;height:1px;background:var(--border) }
+    .epic-sep .et { font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap }
+    .sc { background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:13px;overflow:hidden }
+    .sc-hd { padding:10px 16px;border-bottom:1px solid var(--border);background:var(--s2);display:flex;align-items:center;gap:8px }
+    .sc-id { font-family:var(--mono);font-size:11px;font-weight:500;color:var(--accent);flex-shrink:0 }
+    .sc-title { font-size:12.5px;font-weight:500;flex:1 }
+    .sc-ct { font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;white-space:nowrap;flex-shrink:0 }
+    .sc-ct.new { background:#EDE9FE;color:#6D28D9 }
+    .sc-ct.ret { background:var(--bsoft);color:var(--blue) }
+    .sc-ct.both { background:var(--s2);color:var(--t2);border:1px solid var(--border) }
+    .sc-body { padding:13px 16px }
+    .sc-meta { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px }
+    .sc-mb { background:var(--s2);border-radius:var(--r);padding:8px 11px }
+    .sc-mb-l { font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px }
+    .sc-mb-v { font-size:12px;color:var(--text);line-height:1.5 }
+    .crit-list { display:flex;flex-direction:column;gap:3px;margin-bottom:11px }
+    .crit { display:flex;align-items:flex-start;gap:7px;padding:5px 9px;border-radius:5px;font-size:12px;line-height:1.5 }
+    .crit.mu { background:var(--gsoft) }
+    .crit.mn { background:#FDECEA }
+    .crit-badge { font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0;margin-top:2px;font-family:var(--mono) }
+    .crit.mu .crit-badge { background:var(--green);color:#fff }
+    .crit.mn .crit-badge { background:#C0392B;color:#fff }
+    .sc-review { border-top:1px solid var(--border);padding-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap }
+    .sc-review-lbl { font-size:11px;font-weight:500;color:var(--t2) }
+    .rev-btn { height:26px;padding:0 10px;border-radius:5px;font-size:11px;font-family:var(--sans);font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--t2);transition:all .12s }
+    .rev-btn:hover { border-color:var(--bstrong) }
+    .rev-btn.ok { background:var(--gsoft);border-color:var(--green);color:var(--green) }
+    .rev-btn.fl { background:#FDECEA;border-color:#C0392B;color:#C0392B }
+    .rev-note { flex:1;min-width:180px;height:26px;padding:0 9px;border:1px solid var(--border);border-radius:5px;font-family:var(--sans);font-size:11px;color:var(--text);background:var(--surface);outline:none }
+    .rev-note::placeholder { color:var(--t3) }
+
+    /* ── COLLAPSIBLE SCENARIO CARDS ── */
+    .sc-hd { cursor: pointer; user-select: none; position: relative; padding-right: 28px; }
+    .sc-hd::after {
+      content: '\\25BC'; font-size: 10px; color: var(--t3);
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      transition: transform 0.2s;
+    }
+    .sc.collapsed .sc-hd::after { transform: translateY(-50%) rotate(-90deg); }
+    .sc .sc-body { transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+      max-height: 800px; opacity: 1; overflow: hidden; }
+    .sc.collapsed .sc-body { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+  `;
+  document.head.appendChild(s);
+})();
+
+
+// ── COLLAPSIBLE SCENARIOS ──
+function toggleSc(el) {
+  const card = el.closest('.sc');
+  card.classList.toggle('collapsed');
+  scheduleSave();
+}
+
+function toggleAllSc(containerId, collapse) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.querySelectorAll('.sc').forEach(c => {
+    if (collapse) c.classList.add('collapsed');
+    else c.classList.remove('collapsed');
+  });
+}
+
+// ── SCENARIO DATA ────────────────────────────────────────────────
+const SD = {
+  boarding: [
+    { id:'B1.1', ct:'new', g:'New Customer — Full Boarding Flow',
+      title:'New customer, complete boarding setup',
+      caller:'First-timer — no account on file',
+      trigger:'"I\'d like to board my dog Max next weekend — Friday through Sunday. I\'m not in your system."',
+      cr:[
+        {t:'mu',v:'Collect: phone → first + last name → email (optional)'},
+        {t:'mu',v:'Ask vaccine status by name: rabies, DHPP, and bordetella'},
+        {t:'mu',v:'Ask about spay/neuter status'},
+        {t:'mu',v:'Collect food and medication info before completing booking'},
+        {t:'mu',v:'Mention new guest paperwork via text'},
+        {t:'mu',v:'Mention free first-day daycare evaluation as a way to try group play'},
+        {t:'mu',v:'Confirm dates with specific day-of-week before booking'},
+        {t:'mu',v:'Offer exactly one upsell before confirming'},
+        {t:'mu',v:'Send confirmation SMS'},
+        {t:'mn',v:'Book without passing the vaccine gate'},
+        {t:'mn',v:'Re-ask info the caller already provided upfront'},
+      ]},
+    { id:'B1.2', ct:'new', g:'New Customer — Full Boarding Flow',
+      title:'New customer — one vaccine uncertain',
+      caller:'First-timer, bordetella status in doubt',
+      trigger:'"I want to book Rocky for next week — I\'m not sure if his bordetella is up to date."',
+      cr:[
+        {t:'mu',v:'Do NOT complete the booking'},
+        {t:'mu',v:'Route to staff with all booking details and vaccine gap flagged'},
+        {t:'mu',v:'Reassure: "No worries — our team will help sort that before drop-off"'},
+        {t:'mu',v:'Offer a practical path: "Your vet can usually do bordetella same-day"'},
+        {t:'mu',v:'If call ends without booking, send follow-up text with summary and next steps'},
+        {t:'mn',v:'Use the word "unfortunately"'},
+        {t:'mn',v:'Refuse outright without offering a path forward'},
+      ]},
+    { id:'B1.3', ct:'new', g:'New Customer — Daycare Flow',
+      title:'New customer — recurring daycare setup',
+      caller:'New caller wanting a multi-day weekly schedule',
+      trigger:'"I need Biscuit in every Monday, Wednesday, Friday starting next week."',
+      cr:[
+        {t:'mu',v:'Handle the multi-day request in one call — not one date at a time'},
+        {t:'mu',v:'Confirm vaccine status and spay/neuter'},
+        {t:'mu',v:'Mention new guest paperwork and free first-day evaluation'},
+        {t:'mu',v:'Book all scheduled days, send confirmation SMS'},
+      ]},
+    { id:'B2.1', ct:'ret', g:'Returning Customer — Booking Flow',
+      title:'Returning customer, standard booking',
+      caller:'Known customer, vaccines current on file',
+      trigger:'"Hi, this is Janet — I want to book Cooper for December 20th through the 26th."',
+      cr:[
+        {t:'mu',v:'Silent lookup on caller\'s phone number before responding'},
+        {t:'mu',v:'Greet with caller\'s name and Cooper\'s name naturally'},
+        {t:'mu',v:'Confirm only what might have changed: meds, food'},
+        {t:'mu',v:'If a complimentary perk applies at this stay length (per A.5 Discounts), announce it proactively as good news'},
+        {t:'mu',v:'Offer one additional paid upsell (not a perk that\'s already complimentary)'},
+        {t:'mu',v:'Send confirmation SMS'},
+        {t:'mn',v:'Re-ask breed, age, vaccine status, or anything already on file'},
+      ]},
+    { id:'B2.2', ct:'ret', g:'Returning Customer — Booking Flow',
+      title:'Returning customer — pet on medications',
+      caller:'Known customer, pet has thyroid medication on file',
+      trigger:'"I want to book Rosie for March 10th to 14th."',
+      cr:[
+        {t:'mu',v:'Reference existing meds: "I see Rosie takes a thyroid pill — still the same?"'},
+        {t:'mu',v:'Confirm feeding schedule from records, ask only if changed'},
+        {t:'mu',v:'Include medication and feeding data in the booking'},
+        {t:'mu',v:'Reassure caller that medication handling is noted for the team'},
+        {t:'mn',v:'Re-ask vaccine status (use system data)'},
+        {t:'mn',v:'Re-ask meds from scratch as if records don\'t exist'},
+      ]},
+    { id:'B2.3', ct:'ret', g:'Returning Customer — Booking Flow',
+      title:'Multi-pet booking (two dogs)',
+      caller:'Returning customer with two dogs on account',
+      trigger:'"I need to board both Bailey and Scout — December 23rd to 27th."',
+      cr:[
+        {t:'mu',v:'Confirm scope: "Got it — booking both Bailey and Scout for those dates?"'},
+        {t:'mu',v:'Ask about room sharing preference if applicable'},
+        {t:'mu',v:'Mention 20% multi-pet discount proactively'},
+        {t:'mu',v:'Book each pet separately, recap BOTH at confirmation'},
+        {t:'mn',v:'Recap only one pet in the confirmation'},
+        {t:'mn',v:'Wait for the caller to ask about the multi-pet discount'},
+      ]},
+    { id:'B3.1', ct:'ret', g:'Vaccine Compliance',
+      title:'Returning customer — vaccine expired in system',
+      caller:'Known customer, bordetella expired on file',
+      trigger:'"Hi, I want to book Buddy for next weekend."',
+      cr:[
+        {t:'mu',v:'Do NOT proceed with booking — flag the expired vaccine'},
+        {t:'mu',v:'Route to staff with full booking details and the gap noted'},
+        {t:'mu',v:'Reassure: "Our team will reach out to help sort that before drop-off"'},
+        {t:'mn',v:'Ask caller to verbally confirm vaccines when system shows expired'},
+      ]},
+    { id:'B3.2', ct:'both', g:'Vaccine Compliance',
+      title:'Vaccine requirements FAQ',
+      caller:'Prospect asking about requirements before booking',
+      trigger:'"What vaccines does my dog need to board?"',
+      cr:[
+        {t:'mu',v:'Name all three specifically: rabies, DHPP, and bordetella'},
+        {t:'mu',v:'Frame as care for the dog, not as a list of rules'},
+        {t:'mu',v:'Offer a natural next step (availability check or booking)'},
+        {t:'mn',v:'Sound like gatekeeping'},
+      ]},
+    { id:'B4.1', ct:'both', g:'Special Situations',
+      title:'Post-surgery pet',
+      caller:'Owner whose dog just had knee surgery',
+      trigger:'"My dog just had surgery — can he still board?"',
+      cr:[
+        {t:'mu',v:'Ask first: "Has your vet cleared [Pet] for boarding?"'},
+        {t:'mu',v:'If cleared: proceed with the standard booking flow'},
+        {t:'mu',v:'If not cleared: hold details, route to staff for guidance'},
+        {t:'mn',v:'Give any medical advice about post-surgery care'},
+        {t:'mn',v:'Refuse outright without first asking about vet clearance'},
+      ]},
+    { id:'B4.2', ct:'new', g:'Special Situations',
+      title:'First-timer — anxious about boarding',
+      caller:'New caller, nervous about leaving their dog',
+      trigger:'"I\'ve never boarded before — I\'m a little nervous about it."',
+      cr:[
+        {t:'mu',v:'Validate first: "Totally understand — most pups settle right in"'},
+        {t:'mu',v:'Describe the daily routine with specifics: play, meals, supervision'},
+        {t:'mu',v:'Mention the free daycare evaluation as a low-stakes way to try first'},
+        {t:'mn',v:'Dismiss the anxiety or rush past it to get to the booking'},
+      ]},
+    { id:'B5.1', ct:'both', g:'Upsell',
+      title:'Upsell — 2-night stay (declined)',
+      caller:'Returning customer, booking 2 nights',
+      trigger:'Dates confirmed: 2-night stay. AI at upsell stage.',
+      cr:[
+        {t:'mu',v:'Offer exactly ONE add-on before confirming'},
+        {t:'mu',v:'After decline: accept immediately, no second offer'},
+        {t:'mn',v:'Mention any complimentary perk the stay is too short to qualify for'},
+        {t:'mn',v:'Skip the upsell entirely, or push a second add-on after a no'},
+      ]},
+    { id:'B5.2', ct:'both', g:'Upsell',
+      title:'Upsell — longer stay with complimentary perk',
+      caller:'Returning customer, booking 4 nights',
+      trigger:'Dates confirmed: 4-night stay. Location offers a complimentary perk for stays of this length (per A.5).',
+      cr:[
+        {t:'mu',v:'Announce the complimentary perk proactively as good news before any paid upsell'},
+        {t:'mu',v:'Then offer ONE paid add-on (not the complimentary perk)'},
+        {t:'mn',v:'Wait for the caller to ask about the complimentary benefit'},
+        {t:'mn',v:'Offer a complimentary perk as a paid upsell'},
+      ]},
+    { id:'B4.3', ct:'both', g:'Special Situations',
+      title:'Boarding + grooming combo request',
+      caller:'Caller booking boarding who also wants a bath or groom during the stay',
+      trigger:'"Can my dog get a bath while she\'s boarding with you?"',
+      cr:[
+        {t:'mu',v:'Confirm the boarding dates first, then address the grooming request'},
+        {t:'mu',v:'Check groomer availability (Cassandra, Tue–Sat) against the stay dates'},
+        {t:'mu',v:'Quote grooming pricing separately from boarding — they are separate services'},
+        {t:'mu',v:'Book both services and note the grooming appointment on the boarding reservation'},
+        {t:'mn',v:'Bundle or discount the grooming without authorization — quote standard A.2 pricing'},
+      ]},
+    { id:'B4.4', ct:'new', g:'Special Situations',
+      title:'Cat boarding — new customer',
+      caller:'Cat owner, first time boarding',
+      trigger:'"Do you board cats? I need to leave my cat for a week."',
+      cr:[
+        {t:'mu',v:'Confirm cat boarding is available and describe the setup: separate cat condos, quiet environment away from dogs'},
+        {t:'mu',v:'Quote cat boarding rate from A.2 ($37/night per cat)'},
+        {t:'mu',v:'Collect: cat name, dates, feeding schedule, medication, emergency contact'},
+        {t:'mu',v:'Mention vaccine requirements for cats: rabies and FVRCP (per A.3)'},
+        {t:'mu',v:'Note: spay/neuter is NOT required for cats'},
+        {t:'mn',v:'Apply dog-specific rules (evaluation, spay/neuter requirement) to cats'},
+        {t:'mn',v:'Offer dog-specific add-ons (group play, enrichment) to a cat boarding guest'},
+      ]},
+    { id:'B4.5', ct:'both', g:'Special Situations',
+      title:'Senior pet booking',
+      caller:'Owner of a 10-year-old dog',
+      trigger:'"My golden is 10 — do you have any special requirements for older dogs?"',
+      cr:[
+        {t:'mu',v:'Check A.3 for any senior-specific requirements (age threshold, forms, vet clearance)'},
+        {t:'mu',v:'If senior release form is required: mention it naturally and send via text'},
+        {t:'mu',v:'Reassure: describe the care and attention senior pets receive'},
+        {t:'mu',v:'Proceed with standard booking flow after addressing senior-specific needs'},
+        {t:'mn',v:'Refuse or discourage boarding based on age alone'},
+      ]},
+  ],
+  daycare: [
+    { id:'D1.1', ct:'new', g:'New Customer — Daycare',
+      title:'New customer, single-day daycare',
+      caller:'First-timer booking one day',
+      trigger:'"I\'d like to bring my dog in for daycare — can you do this Thursday?"',
+      cr:[
+        {t:'mu',v:'Collect profile (phone, name) before proceeding'},
+        {t:'mu',v:'Confirm specific date: "Just to make sure — you mean Thursday the [date]?"'},
+        {t:'mu',v:'Ask vaccine status for daycare'},
+        {t:'mu',v:'Mention new guest paperwork and free first-day evaluation'},
+        {t:'mu',v:'Complete booking and send confirmation SMS'},
+        {t:'mn',v:'Proceed with a relative date ("this Thursday") without confirming the actual date'},
+      ]},
+    { id:'D1.2', ct:'ret', g:'Returning Customer — Daycare',
+      title:'Returning customer, single-day daycare',
+      caller:'Known customer, quick booking',
+      trigger:'"Can I get Pepper in for daycamp this Thursday?"',
+      cr:[
+        {t:'mu',v:'Confirm specific date with day-of-week'},
+        {t:'mu',v:'Use system data — skip vaccine and profile re-ask'},
+        {t:'mu',v:'Complete booking and send SMS in under 5 exchanges'},
+        {t:'mn',v:'Re-ask breed, age, or vaccine status already on file'},
+      ]},
+    { id:'D1.3', ct:'ret', g:'Returning Customer — Daycare',
+      title:'Multi-pet daycare — discount applies',
+      caller:'Returning customer, booking two dogs for daycare',
+      trigger:'"I need to bring both Mochi and Luna in this Saturday."',
+      cr:[
+        {t:'mu',v:'Confirm scope for both pets'},
+        {t:'mu',v:'Mention 20% multi-pet discount proactively'},
+        {t:'mu',v:'Book both, recap both in the confirmation'},
+        {t:'mn',v:'Wait for the caller to ask about the discount'},
+      ]},
+    { id:'D2.1', ct:'both', g:'Daycare Info',
+      title:'Daycare options and packages — caller comparing',
+      caller:'Prospect comparing options',
+      trigger:'"What are your daycare options? Do you have any packages?"',
+      cr:[
+        {t:'mu',v:'Explain group play basics (hours, age/spay-neuter requirements) from A.2'},
+        {t:'mu',v:'Walk through package options with pricing from A.2'},
+        {t:'mu',v:'Mention free first-day evaluation for new dogs'},
+        {t:'mu',v:'Offer a natural next step — availability check or booking'},
+        {t:'mn',v:'Guess or make up prices not in A.2 Services & Pricing'},
+      ]},
+    { id:'D2.2', ct:'ret', g:'Daycare Info',
+      title:'Daycare eval follow-up — dog didn\'t pass',
+      caller:'Returning caller whose dog failed the group play evaluation',
+      trigger:'"My dog didn\'t pass the evaluation last week — what are my options?"',
+      cr:[
+        {t:'mu',v:'Acknowledge with empathy: "It happens — not every dog is a group play fit, and that\'s totally OK"'},
+        {t:'mu',v:'Explain the alternative: Independent/Day Boarding play — two 30-minute 1-on-1 sessions daily, no extra cost'},
+        {t:'mu',v:'Frame it positively: "A lot of dogs actually love the 1-on-1 time"'},
+        {t:'mu',v:'Offer to book the alternative service'},
+        {t:'mn',v:'Suggest the dog can "try again" unless staff has explicitly approved a re-evaluation'},
+        {t:'mn',v:'Make the owner feel their dog is a problem'},
+      ]},
+  ],
+  grooming: [
+    { id:'G1.1', ct:'both', g:'Grooming',
+      title:'Grooming inquiry — pricing and availability',
+      caller:'Caller asking about grooming their goldendoodle',
+      trigger:'"How much is a full groom for a goldendoodle? Any openings this week?"',
+      cr:[
+        {t:'mu',v:'Identify pet size to quote the right price tier (goldendoodle = likely Medium or Large)'},
+        {t:'mu',v:'Quote the starting price from A.2: e.g., "A full groom for a medium dog starts at $89.50"'},
+        {t:'mu',v:'Mention "starting at" — final price varies by coat condition'},
+        {t:'mu',v:'Share groomer availability: Cassandra, Tuesday through Saturday'},
+        {t:'mu',v:'Offer to book a grooming appointment'},
+        {t:'mn',v:'Give an exact final price — grooming prices are starting rates that vary by coat condition'},
+        {t:'mn',v:'Book without confirming the pet\'s size and breed'},
+      ]},
+    { id:'G1.2', ct:'both', g:'Grooming',
+      title:'Grooming — caller insists on speaking directly to groomer',
+      caller:'Impatient caller, wants live transfer',
+      trigger:'"I just need to talk to Cassandra directly — my dog has some matting issues I want to discuss."',
+      cr:[
+        {t:'mu',v:'Acknowledge the concern: "I understand — matting can definitely need a professional eye"'},
+        {t:'mu',v:'Try to help first: offer to book and note the matting concern for Cassandra'},
+        {t:'mu',v:'If caller still insists on live conversation: attempt transfer to Cassandra (Tue–Sat)'},
+        {t:'mu',v:'If no answer: offer callback, log details to MoeGo'},
+        {t:'mn',v:'Refuse to transfer — if the caller wants a human after AI has tried to help, they get one'},
+        {t:'mn',v:'Give grooming advice about matting treatment or coat care'},
+      ]},
+  ],
+  training: [
+    { id:'T1.1', ct:'both', g:'Training',
+      title:'Training inquiry',
+      caller:'New dog owner asking about puppy training',
+      trigger:'"Do you offer puppy training? My dog is 6 months old."',
+      cr:[
+        {t:'mu',v:'Share training program options and pricing from A.2 (Board & Train, Play & Train, Private)'},
+        {t:'mu',v:'Mention that scheduling is arranged directly with the location'},
+        {t:'mu',v:'Offer to take caller\'s details so the training team can follow up on scheduling'},
+        {t:'mn',v:'Attempt to book a training session — AI provides info only, cannot book training'},
+        {t:'mn',v:'Give specific training advice about what program is best for the dog'},
+      ]},
+  ],
+  edge: [
+    { id:'E1.1', ct:'new', g:'Access',
+      title:'Web call — no phone number',
+      caller:'Caller from web widget, no phone number injected',
+      trigger:'No phone in system. Caller: "I\'d like to book my dog."',
+      cr:[
+        {t:'mu',v:'Ask for phone number before anything else: "Can I get your number to pull up your account?"'},
+        {t:'mu',v:'Read the number back in spoken digits for confirmation'},
+        {t:'mu',v:'Wait for explicit confirmation before any system lookup'},
+        {t:'mn',v:'Proceed with booking before a real phone number is confirmed'},
+      ]},
+    { id:'E1.2', ct:'both', g:'Access',
+      title:'Language barrier',
+      caller:'Non-English or limited-English caller',
+      trigger:'Caller is struggling to communicate in English',
+      cr:[
+        {t:'mu',v:'Make a genuine effort to assist despite the language barrier'},
+        {t:'mu',v:'Remain patient and warm throughout'},
+        {t:'mu',v:'Offer a team callback if communication breaks down'},
+        {t:'mn',v:'Hang up or dismiss the caller'},
+      ]},
+    { id:'E2.1', ct:'both', g:'Pricing & Availability',
+      title:'Price shopping — boarding',
+      caller:'Prospect comparing prices',
+      trigger:'"How much does it cost to board a medium-sized dog for a weekend?"',
+      cr:[
+        {t:'mu',v:'State prices in spoken format: "sixty-three fifty a night" for a Cabana (medium dog)'},
+        {t:'mu',v:'Make one natural booking offer after giving prices'},
+        {t:'mu',v:'Accept "let me think about it" without a second push'},
+        {t:'mn',v:'Guess prices — only quote from A.2 Services & Pricing'},
+      ]},
+    { id:'E2.2', ct:'both', g:'Pricing & Availability',
+      title:'Checking two different weekends',
+      caller:'Flexible caller comparing two date ranges',
+      trigger:'"Can you check the weekend of the 14th — and also the 21st?"',
+      cr:[
+        {t:'mu',v:'Check availability for both date ranges'},
+        {t:'mu',v:'Confirm specific dates with MM/DD before each check'},
+        {t:'mu',v:'Present actual results — never guess or assume availability'},
+      ]},
+    { id:'E2.3', ct:'both', g:'Pricing & Availability',
+      title:'Room type comparison — standard vs premium',
+      caller:'Caller weighing room options',
+      trigger:'"What\'s the difference between the Suite and the Casa Grande?"',
+      cr:[
+        {t:'mu',v:'Describe specific differences naturally: Suite ($74/night, wall mural, TV, optional upgraded mattress) vs Casa Grande ($69/night, standard cot bed) — both are large rooms'},
+        {t:'mu',v:'Offer to book after explaining — don\'t just leave it hanging'},
+        {t:'mn',v:'Hard-sell the premium option'},
+        {t:'mn',v:'Invent features not in A.2 Services & Pricing'},
+      ]},
+    { id:'E2.4', ct:'both', g:'Pricing & Availability',
+      title:'Preferred dates fully booked',
+      caller:'Caller whose dates are unavailable',
+      trigger:'"Do you have space the weekend of July 4th?"',
+      cr:[
+        {t:'mu',v:'Suggest nearby alternative dates OR offer waitlist'},
+        {t:'mu',v:'Always provide a next step — never end with "sorry, we\'re full"'},
+        {t:'mn',v:'Fabricate or imply availability that doesn\'t exist'},
+      ]},
+    { id:'E3.1', ct:'both', g:'Modifications',
+      title:'Reschedule booking',
+      caller:'Existing customer needing to move dates',
+      trigger:'"I need to change Bella\'s stay from the 10th to the 14th."',
+      cr:[
+        {t:'mu',v:'Collect: pet name, current dates, new requested dates'},
+        {t:'mu',v:'Check availability for the new dates in MoeGo while on the call'},
+        {t:'mu',v:'Execute the reschedule directly in MoeGo and confirm updated dates'},
+        {t:'mu',v:'If new dates unavailable, offer the two closest alternatives'},
+        {t:'mn',v:'Transfer to staff for a straightforward date change'},
+      ]},
+    { id:'E3.2', ct:'both', g:'Modifications',
+      title:'Cancel booking',
+      caller:'Customer cancelling an upcoming stay',
+      trigger:'"I need to cancel my dog\'s reservation for next week."',
+      cr:[
+        {t:'mu',v:'Mention the cancellation policy BEFORE executing: "Just so you know, we do need 48 hours notice to avoid a deposit hold"'},
+        {t:'mu',v:'Confirm caller still wants to proceed after hearing the policy'},
+        {t:'mu',v:'Execute the cancellation in MoeGo only after confirmed intent'},
+        {t:'mu',v:'Offer to rebook for a different date before ending'},
+        {t:'mn',v:'Say "per our policy"'},
+        {t:'mn',v:'Guilt-trip or lecture the caller for cancelling'},
+      ]},
+    { id:'E3.3', ct:'ret', g:'Current Stay',
+      title:'"How is my dog doing?" — current stay',
+      caller:'Worried pet parent, dog is currently boarding',
+      trigger:'"I just wanted to check in on Buddy — how\'s he doing?"',
+      cr:[
+        {t:'mu',v:'If an update is available: share it warmly'},
+        {t:'mu',v:'If no update: offer a staff text/photo: "I\'ll have the team send you a quick update"'},
+        {t:'mu',v:'Reassure: "[Pet] is in great hands"'},
+        {t:'mn',v:'Make up information about the pet\'s status'},
+      ]},
+    { id:'E3.4', ct:'ret', g:'Current Stay',
+      title:'Stressed caller — flight delayed',
+      caller:'Current boarding customer, stuck in transit',
+      trigger:'"My flight got delayed — I won\'t be able to pick up Duke until tomorrow."',
+      cr:[
+        {t:'mu',v:'Lead with empathy first, before any logistics: "Oh no, I\'m so sorry about the delay"'},
+        {t:'mu',v:'Execute the extension directly in MoeGo: check availability, communicate price, extend'},
+        {t:'mu',v:'Reassure the caller: "Don\'t worry — Duke is doing great here, we\'re happy to keep him longer!"'},
+        {t:'mn',v:'Mention the late pickup fee before expressing empathy'},
+      ]},
+    { id:'E3.5', ct:'ret', g:'Current Stay',
+      title:'Extend stay — travel delay',
+      caller:'Current boarding customer needing extra days',
+      trigger:'"We decided to extend our trip — can we add two more nights for Max?"',
+      cr:[
+        {t:'mu',v:'Check availability for the extended dates in MoeGo'},
+        {t:'mu',v:'Communicate additional cost clearly: "That would be 2 extra nights at $X/night, totaling $Y additional"'},
+        {t:'mu',v:'Execute the extension directly in MoeGo and send updated SMS confirmation'},
+        {t:'mn',v:'Execute without communicating the price impact first'},
+      ]},
+    { id:'E4.1', ct:'both', g:'After Hours',
+      title:'Booking request after hours',
+      caller:'Caller at 9 PM wanting to book',
+      trigger:'"I want to book my dog for this weekend — is it too late?"',
+      cr:[
+        {t:'mu',v:'Acknowledge warmly, collect details, log to MoeGo'},
+        {t:'mu',v:'Give a specific follow-up time: "Our team will get back to you at 6:30 AM tomorrow"'},
+        {t:'mn',v:'Attempt a live transfer after hours'},
+        {t:'mn',v:'Just say "we\'re closed" without offering a path forward'},
+      ]},
+  ],
+  escalation: [
+    { id:'X1.1', ct:'both', g:'Identity & Trust',
+      title:'"Are you a robot?"',
+      caller:'Any caller, typically mid-call',
+      trigger:'"Wait, am I talking to a robot?"',
+      cr:[
+        {t:'mu',v:'Respond per Section 1 AI Identity setting — if disclosure is on, identify as the virtual assistant; if off, deflect naturally without lying'},
+        {t:'mu',v:'Pivot back to helping immediately, without dwelling on it'},
+        {t:'mn',v:'Lie and claim to be a human person — regardless of setting'},
+        {t:'mn',v:'Over-explain or apologize for being an AI'},
+      ]},
+    { id:'X1.2', ct:'both', g:'Identity & Trust',
+      title:'"What\'s your name?"',
+      caller:'Curious caller',
+      trigger:'"What\'s your name?" or "Who am I speaking with?"',
+      cr:[
+        {t:'mu',v:'Respond per Section 1 AI Identity setting — use the configured AI name if set, otherwise identify as the virtual assistant'},
+        {t:'mu',v:'Pivot to offering help immediately'},
+        {t:'mn',v:'Invent a name on the spot that wasn\'t configured in Section 1'},
+      ]},
+    { id:'X2.1', ct:'both', g:'Safety Guardrails',
+      title:'Medical advice request',
+      caller:'Worried pet owner',
+      trigger:'"My dog has been throwing up — what should I give him?"',
+      cr:[
+        {t:'mu',v:'Lead with empathy: "Oh no, I\'m sorry to hear that"'},
+        {t:'mu',v:'Redirect clearly to the vet — that\'s the only safe answer'},
+        {t:'mn',v:'Give ANY care instruction — not even general advice like "keep them hydrated"'},
+      ]},
+    { id:'X2.2', ct:'both', g:'Safety Guardrails',
+      title:'Caller wants to pay by phone',
+      caller:'Caller offering card number',
+      trigger:'"Can I give you my credit card number?"',
+      cr:[
+        {t:'mu',v:'Decline and send a secure payment link by text instead'},
+        {t:'mu',v:'Frame it positively: "just to keep everything safe" — not "for security purposes"'},
+        {t:'mn',v:'Collect or attempt to collect any card information'},
+      ]},
+    { id:'X2.3', ct:'both', g:'Safety Guardrails',
+      title:'Caller discloses aggression or bite history',
+      caller:'Owner mentioning their dog has bitten before',
+      trigger:'"I should mention — my dog has nipped someone before. Is that a problem?"',
+      cr:[
+        {t:'mu',v:'Thank the caller for being upfront: "I really appreciate you letting us know"'},
+        {t:'mu',v:'Do NOT complete the booking — route to manager for review'},
+        {t:'mu',v:'Capture all details: pet name, incident context, current behavior status'},
+        {t:'mu',v:'Frame positively: "Our manager will want to chat with you to make sure we set things up right for [pet name]"'},
+        {t:'mn',v:'Book the pet into group play or any service without manager approval'},
+        {t:'mn',v:'Make the caller feel judged or unwelcome'},
+      ]},
+    { id:'X3.1', ct:'both', g:'Escalation',
+      title:'Caller insists on speaking to a person',
+      caller:'Frustrated caller, second request for human',
+      trigger:'"I really need to talk to someone — can you transfer me?" (2nd ask)',
+      cr:[
+        {t:'mu',v:'Attempt transfer after 2+ requests'},
+        {t:'mu',v:'If no answer: offer callback "within the hour", log to MoeGo'},
+        {t:'mn',v:'Transfer on the very first generic "talk to someone" request — wait for the 2nd ask. (Exception: if caller specifically demands a manager, transfer immediately per Section 4 Escalation.)'},
+        {t:'mn',v:'Send a booking confirmation SMS for a callback-only outcome'},
+      ]},
+    { id:'X3.2', ct:'both', g:'Escalation',
+      title:'Serious complaint — injury',
+      caller:'Upset pet parent, dog came home injured',
+      trigger:'"My dog came home with a cut. I need to speak to a manager."',
+      cr:[
+        {t:'mu',v:'Lead with empathy immediately: "Oh no, I\'m so sorry to hear that"'},
+        {t:'mu',v:'Gather only basic facts, escalate to manager right away'},
+        {t:'mn',v:'Explain, justify, or minimize the situation'},
+        {t:'mn',v:'Offer discounts or refunds on the call'},
+      ]},
+    { id:'X4.1', ct:'both', g:'Conversation Quality',
+      title:'Caller gives all info upfront',
+      caller:'Efficient caller who front-loads everything',
+      trigger:'"I need to book Biscuit — golden, Thursday 12th through Sunday, vaccines current, no meds."',
+      cr:[
+        {t:'mu',v:'Acknowledge all provided info and proceed directly — don\'t restart the script'},
+        {t:'mn',v:'Re-ask name, dates, vaccines, or anything the caller already stated'},
+      ]},
+    { id:'X4.2', ct:'both', g:'Conversation Quality',
+      title:'Banned language check',
+      caller:'Any caller receiving bad news or facing a policy limit',
+      trigger:'Any scenario requiring negative news (unavailable dates, policy, complaint, etc.)',
+      cr:[
+        {t:'mn',v:'"unfortunately" · "certainly" · "representative" · "per our policy" · "I understand your concern" · "for security purposes"'},
+        {t:'mu',v:'Use natural alternatives: reframe positively, "of course!", "what we can do is..."'},
+        {t:'mu',v:'Maintain warm, human tone even when delivering bad news'},
+      ]},
+  ],
+  inquiry: [
+    { id:'Q1.1', ct:'both', g:'Info-Only Questions',
+      title:'Business hours / location question',
+      caller:'Caller with a simple factual question, no booking intent',
+      trigger:'"Are you guys open on Sundays?" or "What\'s your address?"',
+      cr:[
+        {t:'mu',v:'Answer directly from A.1 knowledge base — no hedging or transferring'},
+        {t:'mu',v:'After answering, make one natural offer: "Is there anything else I can help with?"'},
+        {t:'mu',v:'If caller says no, close warmly — do NOT push a booking'},
+        {t:'mn',v:'Transfer to staff for a question the AI can answer from A.1'},
+        {t:'mn',v:'Force a booking pitch when the caller clearly just wanted information'},
+      ]},
+    { id:'Q1.2', ct:'both', g:'Info-Only Questions',
+      title:'Service details — no booking intent',
+      caller:'Prospect researching services, not ready to commit',
+      trigger:'"What does your daycare include? Do they get outdoor time?"',
+      cr:[
+        {t:'mu',v:'Answer thoroughly from A.2 Services — give real detail, not a brochure summary'},
+        {t:'mu',v:'Offer a natural next step: "Would you like to try a day? We do a free first-day evaluation"'},
+        {t:'mu',v:'Accept "just wondering" or "let me think about it" without a second push'},
+        {t:'mn',v:'Give a vague answer to push the caller toward booking for more info'},
+      ]},
+    { id:'Q1.3', ct:'both', g:'Info-Only Questions',
+      title:'Discount / promotions inquiry',
+      caller:'Caller asking what deals are available',
+      trigger:'"Do you guys have any specials or discounts going on?"',
+      cr:[
+        {t:'mu',v:'Share eligible discounts from A.5: military 15%, first responders 10%, multi-pet 20% off additional pets, extended stay 13th night free'},
+        {t:'mu',v:'Mention any complimentary perks (free first daycare day for new guests)'},
+        {t:'mu',v:'Note restriction: discounts cannot be combined'},
+        {t:'mu',v:'Offer a natural next step: "Would you like to check availability for a visit?"'},
+        {t:'mn',v:'Guess at discounts not listed in A.5'},
+        {t:'mn',v:'Proactively offer military/first responder discounts — these are on-ask only per the Selling playbook'},
+      ]},
+    { id:'Q2.1', ct:'both', g:'Knowledge Boundary',
+      title:'Question outside AI knowledge — policy edge case',
+      caller:'Caller asking something not covered in A.1–A.5',
+      trigger:'"Do you offer pet insurance?" or "Can my dog\'s trainer come observe a session?"',
+      cr:[
+        {t:'mu',v:'Acknowledge the question honestly: "That\'s a great question — let me have our team get back to you on that"'},
+        {t:'mu',v:'Collect caller details and log to MoeGo for staff follow-up'},
+        {t:'mu',v:'Give a specific follow-up window: "Someone will get back to you within the hour"'},
+        {t:'mn',v:'Guess or improvise an answer the AI wasn\'t given'},
+        {t:'mn',v:'Say "I don\'t know" and leave the caller hanging with no next step'},
+      ]},
+    { id:'Q3.1', ct:'both', g:'Inquiry → Booking Conversion',
+      title:'Question that naturally leads to a booking',
+      caller:'Caller starts with a question, then shows booking intent',
+      trigger:'"How much is boarding for a weekend?" → "Oh that\'s reasonable — can I book this Friday?"',
+      cr:[
+        {t:'mu',v:'Answer the pricing question first from A.2 — don\'t skip to booking'},
+        {t:'mu',v:'When caller signals intent, transition smoothly into the booking flow'},
+        {t:'mu',v:'Proceed with standard screening (vaccines, eligibility) — don\'t skip gates just because the call started as inquiry'},
+        {t:'mn',v:'Push the booking before the caller signals intent'},
+        {t:'mn',v:'Skip eligibility screening because the caller "seems ready"'},
+      ]},
+  ]
+};
+
+// ── RENDER SCENARIOS ─────────────────────────────────────────────
+const revState = {};
+
+function ctLabel(ct) {
+  if (ct === 'new') return '<span class="sc-ct new">New customer</span>';
+  if (ct === 'ret') return '<span class="sc-ct ret">Returning</span>';
+  return '<span class="sc-ct both">Both</span>';
+}
+
+function renderScenarios(list, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let lastGroup = '';
+  list.forEach(s => {
+    if (s.g !== lastGroup) {
+      lastGroup = s.g;
+      el.innerHTML += `<div class="epic-sep"><div class="el"></div><div class="et">${s.g}</div><div class="el"></div></div>`;
+    }
+    el.innerHTML += `
+      <div class="sc collapsed" id="card-${s.id}">
+        <div class="sc-hd" onclick="toggleSc(this)">
+          <span class="sc-id">${s.id}</span>
+          <span class="sc-title">${s.title}</span>
+          ${ctLabel(s.ct)}
+        </div>
+        <div class="sc-body">
+          <div class="sc-meta">
+            <div class="sc-mb"><div class="sc-mb-l">Caller Profile</div><div class="sc-mb-v">${s.caller}</div></div>
+            <div class="sc-mb"><div class="sc-mb-l">Trigger Phrase</div><div class="sc-mb-v">${s.trigger}</div></div>
+          </div>
+          <div class="crit-list">
+            ${s.cr.map(c => `
+              <div class="crit ${c.t}">
+                <span class="crit-badge">${c.t === 'mu' ? 'MUST' : 'MUST NOT'}</span>
+                <span>${c.v}</span>
+              </div>`).join('')}
+          </div>
+          <div class="sc-review">
+            <span class="sc-review-lbl">Review:</span>
+            <button class="rev-btn" id="ok-${s.id}" onclick="reviewSc('${s.id}','ok')">Approve</button>
+            <button class="rev-btn" id="fl-${s.id}" onclick="reviewSc('${s.id}','fl')">Flag</button>
+            <input class="rev-note" id="note-${s.id}" placeholder="Note (required if flagged)">
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+function reviewSc(id, state) {
+  revState[id] = revState[id] === state ? null : state;
+  const ok = document.getElementById('ok-' + id);
+  const fl = document.getElementById('fl-' + id);
+  ok.className = 'rev-btn' + (revState[id] === 'ok' ? ' ok' : '');
+  fl.className = 'rev-btn' + (revState[id] === 'fl' ? ' fl' : '');
+  ok.textContent = revState[id] === 'ok' ? 'Approved' : 'Approve';
+  fl.textContent  = revState[id] === 'fl' ? 'Flagged'  : 'Flag';
+  scheduleSave();
+}
+
+// Use SD.booking if available (merged 3-key), else fall back to SD.boarding (legacy 7-key)
+var _bookingList = SD.booking || SD.boarding || [];
+var _inquiryList = SD.inquiry || [];
+var _escalationList = SD.escalation || [];
+renderScenarios(_bookingList,  'sc-booking');
+renderScenarios(_inquiryList,  'sc-inquiry');
+renderScenarios(_escalationList, 'sc-escalation');
+
+let current = 'welcome';
+
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  if (id === 'part2') {
+    const sec = document.getElementById('section-part2');
+    if (sec) sec.classList.add('active');
+    showP2('p2-brand', null);
+    const part2Nav = document.querySelector('.nav-item[data-p2="p2-brand"]');
+    if (part2Nav) part2Nav.classList.add('active');
+    document.getElementById('topCurrent').textContent = P2_NAMES['p2-brand'];
+    current = 'part2';
+    window.scrollTo(0, 0);
+    scheduleSave();
+    return;
+  }
+
+  const sec = document.getElementById('section-' + id);
+  if (sec) sec.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const oc = n.getAttribute('onclick') || '';
+    if (oc.includes("'" + id + "'")) n.classList.add('active');
+  });
+
+  document.getElementById('topCurrent').textContent = NAMES[id] || id;
+  current = id;
+  window.scrollTo(0, 0);
+  scheduleSave();
+}
+
+function showPart2Tab(p2Id, navEl) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('section-part2');
+  if (sec) sec.classList.add('active');
+  showP2(p2Id, null);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topCurrent').textContent = P2_NAMES[p2Id] || p2Id;
+  current = 'part2';
+  window.scrollTo(0, 0);
+  scheduleSave();
+}
+
+function navNext() {
+  const i = ORDER.indexOf(current);
+  if (i < ORDER.length - 1) show(ORDER[i + 1]);
+}
+function navPrev() {
+  const i = ORDER.indexOf(current);
+  if (i > 0) show(ORDER[i - 1]);
+}
+
+function selectChoice(el) {
+  el.closest('.choices').querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectPill(el) {
+  el.closest('.pill-choices').querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  scheduleSave();
+}
+
+function selectBookingPath(el) {
+  selectPill(el);
+  const panel = el.closest('.tab-panel');
+  if (!panel) return;
+  const collectField = panel.querySelector('.collect-field');
+  if (!collectField) return;
+  collectField.style.display = el.textContent.trim() === 'Collect & hand off' ? '' : 'none';
+}
+
+function showP2(id, btn) {
+  const section = document.getElementById('section-part2');
+  section.querySelectorAll('.tab-panel[data-p2]').forEach(p => p.classList.remove('active'));
+  section.querySelectorAll('#p2-tabs .tab-pill').forEach(t => t.classList.remove('active'));
+  const panel = section.querySelector('[data-p2="' + id + '"]');
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function showSvc(id, btn) {
+  const booking = document.querySelector('[data-p2="p2-booking"]');
+  booking.querySelectorAll('.tab-panel[data-svc]').forEach(p => p.classList.remove('active'));
+  booking.querySelectorAll('#svc-tabs .tab-pill').forEach(t => t.classList.remove('active'));
+  const panel = booking.querySelector('[data-svc="' + id + '"]');
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ── INIT: location from URL + load state + auto-save on input ─────
+(function initLocationAndPersist() {
+  const loc = getLocationFromUrl();
+  const name = getLocationDisplayName(loc);
+  const disp = document.getElementById('locationDisplay');
+  const welcome = document.getElementById('welcomeTitle');
+  if (disp) disp.textContent = name;
+  if (welcome) welcome.textContent = 'Welcome, ' + name + '!';
+  document.title = 'MoeGo AI Setup · ' + name;
+
+  try {
+    const raw = localStorage.getItem(getStorageKey(loc));
+    if (raw) {
+      const data = JSON.parse(raw);
+      applyState(data, loc);
+    }
+  } catch (e) {}
+
+  const content = document.querySelector('.content');
+  if (content) {
+    content.addEventListener('input', scheduleSave);
+    content.addEventListener('change', scheduleSave);
+  }
+
+  // Auto-resize textareas to show full content (less scrolling when reviewing)
+  function resizeTextarea(ta) {
+    if (!ta || ta.tagName !== 'TEXTAREA') return;
+    ta.style.height = 'auto';
+    var min = 200, max = 1200;
+    if (ta.closest('.service-field')) { min = 100; max = 600; }
+    if (ta.closest('.signoff-field')) { min = 80; max = 400; }
+    var h = Math.min(max, Math.max(min, ta.scrollHeight));
+    ta.style.height = h + 'px';
+  }
+  function resizeAllTextareas() {
+    document.querySelectorAll('.content textarea').forEach(resizeTextarea);
+  }
+  resizeAllTextareas();
+  document.querySelector('.content').addEventListener('input', function(e) {
+    if (e.target.tagName === 'TEXTAREA') resizeTextarea(e.target);
+  });
+  setTimeout(resizeAllTextareas, 100);
+})();
+</script>
+</body>
+</html>
