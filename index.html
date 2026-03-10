@@ -35,7 +35,7 @@
 
 /* ── CARD TEXTAREA ── */
 .card textarea {
-  width: 100%; min-height: 320px; padding: 14px 16px;
+  width: 100%; min-height: 60px; padding: 14px 16px;
   border: 1px solid var(--border); border-radius: 8px;
   font-family: var(--sans); font-size: 13.5px; line-height: 1.7;
   background: var(--surface); color: var(--text); resize: vertical;
@@ -44,7 +44,7 @@
 .card textarea::placeholder { color: var(--muted); font-style: italic; }
 .card .textarea-prompt { font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
 /* Min heights per context; JS will auto-grow to content for easier review */
-.field-value textarea { min-height: 200px; }
+.field-value textarea { min-height: 60px; }
 
 html { scroll-behavior: smooth; }
 body {
@@ -232,7 +232,7 @@ body {
   background: var(--surface); outline: none; transition: border-color 0.12s;
 }
 .signoff-field input:focus, .signoff-field textarea:focus { border-color: var(--accent); }
-.signoff-field textarea { height: auto; padding: 8px 11px; resize: vertical; min-height: 100px; line-height: 1.55; box-sizing: border-box; }
+.signoff-field textarea { height: auto; padding: 8px 11px; resize: vertical; min-height: 56px; line-height: 1.55; box-sizing: border-box; }
 
 /* ── MANDATORY ITEMS ── */
 .mandatory-item {
@@ -256,15 +256,16 @@ body {
 .service-field-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
 .service-field-hint { font-size: 12px; color: var(--t3); margin-bottom: 8px; line-height: 1.5; }
 .service-field input[type="text"] {
-  width: 100%; height: 36px; padding: 0 12px;
+  width: 100%; min-height: 44px; padding: 10px 12px;
   border: 1px solid var(--border); border-radius: var(--r);
-  font-family: var(--sans); font-size: 13px; color: var(--text);
+  font-family: var(--sans); font-size: 13px; line-height: 1.5; color: var(--text);
   background: var(--surface); outline: none; transition: border-color 0.12s;
+  box-sizing: border-box;
 }
 .service-field input[type="text"]:focus { border-color: var(--accent); }
 .service-field input[type="text"]::placeholder { color: var(--t3); }
 .service-field textarea {
-  width: 100%; min-height: 140px; padding: 10px 12px;
+  width: 100%; min-height: 56px; padding: 10px 12px;
   border: 1px solid var(--border); border-radius: var(--r);
   font-family: var(--sans); font-size: 13px; line-height: 1.6;
   background: var(--surface); color: var(--text); resize: vertical; outline: none;
@@ -285,6 +286,30 @@ body {
 .pill.selected { border-color: var(--accent); background: var(--asoft); color: var(--adark); font-weight: 600; }
 .pill-desc { font-weight: 400; color: var(--t2); font-size: 11.5px; }
 .pill.selected .pill-desc { color: var(--adark); opacity: 0.8; }
+
+/* ── BOOKING PANEL (p2): clearer hierarchy + sticky service tabs ── */
+.tab-panel[data-p2="p2-booking"] #svc-tabs.tab-strip {
+  position: sticky; top: 50px; z-index: 10;
+  margin-bottom: 16px; margin-left: -48px; margin-right: -48px; padding-left: 48px; padding-right: 48px;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border);
+}
+.tab-panel[data-p2="p2-booking"] .tab-strip { margin-bottom: 16px; }
+.tab-panel[data-p2="p2-booking"] [data-svc] .service-field {
+  margin-bottom: 16px;
+}
+.tab-panel[data-p2="p2-booking"] [data-svc] .service-field:first-child {
+  margin-bottom: 20px;
+}
+.tab-panel[data-p2="p2-booking"] .booking-extra-block {
+  margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border);
+}
+.tab-panel[data-p2="p2-booking"] .booking-extra-block .block-title {
+  font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;
+}
+.tab-panel[data-p2="p2-booking"] .booking-extra-block .block-desc {
+  font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5;
+}
 
 /* ── SUB-TAB STRIP (horizontal tabs within a section) ── */
 .tab-strip {
@@ -353,7 +378,7 @@ body {
     <a class="nav-item" data-p2="p2-booking" onclick="showPart2Tab('p2-booking', this)" href="#"><span class="nav-dot"></span>Booking</a>
     <a class="nav-item" data-p2="p2-upsell" onclick="showPart2Tab('p2-upsell', this)" href="#"><span class="nav-dot"></span>Upsell</a>
     <a class="nav-item" data-p2="p2-inservice" onclick="showPart2Tab('p2-inservice', this)" href="#"><span class="nav-dot"></span>In-Service</a>
-    <a class="nav-item" data-p2="p2-escalation" onclick="showPart2Tab('p2-escalation', this)" href="#"><span class="nav-dot"></span>Escalation</a>
+    <a class="nav-item" data-p2="p2-escalation" onclick="showPart2Tab('p2-escalation', this)" href="#"><span class="nav-dot"></span>Escalation &amp; Transfer</a>
   </div>
 
   <div class="nav-section">
@@ -429,7 +454,7 @@ body {
       <span class="page-tag">Plane A · Knowledge Base</span>
       <div class="page-title">A.1 Identity & Hours</div>
       <div class="page-desc">Basic facts about your location. The AI uses these for every call.</div>
-      <div class="page-desc" style="margin-top: 4px; font-size: 12px; color: var(--blue); font-style: italic;">Review only, auto-pulled from your MoeGo settings.</div>
+      <div class="page-desc" style="margin-top: 4px; font-size: 12px; color: var(--blue); font-style: italic;">For display only. Please refer to MoeGo &gt; Settings &gt; Services for the up-to-date version.</div>
     </div>
     <div class="card">
       <div class="card-head"><div class="card-title">Business Identity</div></div>
@@ -485,7 +510,7 @@ CLOSED DATES
       <span class="page-tag">Plane A · Knowledge Base</span>
       <div class="page-title">A.2 Services &amp; Pricing</div>
       <div class="page-desc">Everything your location offers, with current pricing. Write naturally — the AI quotes prices exactly, so make sure they're correct. If a service isn't offered, leave that card blank.</div>
-      <div class="page-desc" style="margin-top: 4px; font-size: 12px; color: var(--blue); font-style: italic;">Review only, auto-pulled from your MoeGo settings.</div>
+      <div class="page-desc" style="margin-top: 4px; font-size: 12px; color: var(--blue); font-style: italic;">For display only. Please refer to MoeGo &gt; Settings &gt; Services for the up-to-date version.</div>
     </div>
     <div class="card">
       <div class="card-head"><div class="card-title">Boarding</div></div>
@@ -503,7 +528,7 @@ CAT BOARDING
 $37.00/night per cat in a 3'×3' condo. Spay/neuter not required.
 
 LATE CHECKOUT
-See A.4 Surcharges & Fees for late checkout pricing.
+See Surcharges & Fees (below) for late checkout pricing.
 
 WHAT TO BRING
 Solid 4-6 ft lead, quick buckle collar or harness, pre-portioned dry or canned food, medication in original container with instructions, 1-2 Kong/rubber toys, slow feed or elevated bowls.
@@ -585,6 +610,17 @@ Scheduling: Clients contact the location directly to arrange training.</textarea
       <div class="card-body">
         <div class="textarea-prompt">Any services not covered above — pet taxi, swimming, retail, specialty programs, etc.</div>
         <textarea placeholder="Describe any additional services and pricing here..."></textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Surcharges &amp; Fees</div></div>
+      <div class="card-body">
+        <div class="textarea-prompt">Peak/holiday pricing, late checkout fees, any other surcharges.</div>
+        <textarea>PEAK / HOLIDAY PRICING
+None — no seasonal or holiday surcharges at this location.
+
+LATE CHECKOUT
+$10 per pet if picked up after 3:00 PM (boarding only). Standard checkout is 12:00 PM Noon.</textarea>
       </div>
     </div>
   </div>
@@ -699,17 +735,6 @@ No-shows forfeit the deposit.</textarea>
         <textarea>Credit card, debit card — collected via secure payment link (SMS). Payment is due in full at check-in.</textarea>
       </div>
     </div>
-    <div class="card">
-      <div class="card-head"><div class="card-title">Surcharges &amp; Fees</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">Peak/holiday pricing, late checkout fees, any other surcharges.</div>
-        <textarea>PEAK / HOLIDAY PRICING
-None — no seasonal or holiday surcharges at this location.
-
-LATE CHECKOUT
-$10 per pet if picked up after 3:00 PM (boarding only). Standard checkout is 12:00 PM Noon.</textarea>
-      </div>
-    </div>
   </div>
 
   <!-- ══════════════════════════════════════
@@ -745,10 +770,10 @@ Discounts cannot be combined. No holiday surcharges.</textarea>
        PART 2 — AI CONFIGURATION
 ══════════════════════════════════════ -->
   <div class="section" id="section-part2">
-    <div class="page-header">
+    <div class="page-header" id="part2-page-header">
       <span class="page-tag">Part 2 · Behavior</span>
-      <div class="page-title">AI Configuration</div>
-      <div class="page-desc">How your AI sounds, books, sells, and handles problems. Click each tab to configure.</div>
+      <div class="page-title" id="part2-title">Brand &amp; Voice</div>
+      <div class="page-desc" id="part2-desc">How your AI sounds and greets callers. Tone, personality, and the opening line.</div>
     </div>
 
     <div class="tab-panel active" data-p2="p2-brand">
@@ -775,37 +800,6 @@ WORDS WE NEVER USE
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-head"><div class="card-title">Safety Rules</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">Every team has a few hard lines — things you'd never want said on a call, no matter what. What are yours? These rules override everything else.</div>
-        <textarea>NEVER GUESS
-If the AI is unsure about availability, pricing, policies, or any factual detail — it does NOT guess or improvise.
-What the AI says: "Let me have someone confirm that for you — can I connect you with our team?"
-
-NEVER TAKE CREDIT CARD INFO OVER THE PHONE
-The AI NEVER collects, repeats, or acknowledges credit card numbers spoken aloud. All payment is via secure link.
-
-VERIFY THE CALLER
-Before sharing booking or stay details, verify the caller matches the booking contact (phone number or name confirmation). Protects privacy.</textarea>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><div class="card-title">Phone vs. Text</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">Your AI's personality stays the same everywhere — but a phone call and a text message feel different. How should it adjust its style between the two?</div>
-        <textarea>ON THE PHONE
-Read back key details to confirm. Never sound rushed or say "I don't know" without offering to find out. Natural pacing — let the caller finish.
-
-ON TEXT / CHAT
-Keep messages short and clear. No over-explaining. No excessive emojis. Confirm important details in plain language.
-
-KEY DIFFERENCE
-Phone: verbal confirmation, conversational pace. Text: concise, scannable, same warmth in fewer words.</textarea>
-      </div>
-    </div>
-
       <div class="card">
         <div class="card-head"><div class="card-title">The Greeting</div></div>
         <div class="card-body">
@@ -817,77 +811,6 @@ LEGAL NOTICE (if required)
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head"><div class="card-title">After Hours</div></div>
-        <div class="card-body">
-          <div class="textarea-prompt">It's 9 PM and someone calls. Your location is closed. What can the AI still do? What should it tell the caller?</div>
-          <textarea>WHAT CHANGES
-Greet and state that the location is currently closed. State current hours.
-
-WHAT THE AI STILL DOES
-Offer to book or answer questions. Mention they can leave a message for callback.
-
-CALLBACK PROMISE
-Give a specific follow-up time: "Our team will get back to you at 6:30 AM tomorrow."</textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><div class="card-title">Confirming the Booking</div></div>
-        <div class="card-body">
-          <div class="textarea-prompt">The booking is done. What does the AI say to confirm? What goes in the confirmation text?</div>
-          <textarea>VERBAL RECAP
-Read back key details: dates, room/service, price, deposit if applicable.
-
-CONFIRMATION TEXT
-Send text message with reservation dates, room type, price, deposit amount, drop-off time, and what to bring.
-
-REMINDERS
-[Describe any pre-stay reminders — e.g., text 24 hours before drop-off with check-in instructions.]</textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><div class="card-title">Forms & Paperwork</div></div>
-        <div class="card-body">
-          <div class="textarea-prompt">Do some callers need forms before their visit — registration, waivers, releases? Which forms go to which callers?</div>
-          <textarea>FIRST-TIME CLIENTS
-• New client registration form (via MoeGo automated link)
-• Service agreement / liability waiver
-
-SENIOR PETS (age 7+)
-• Senior pet release form
-
-DAYCARE EVALUATION
-• No separate form — evaluation is part of first-day check-in
-
-DELIVERY
-All forms sent via MoeGo text message link.
-"I'll send over some quick paperwork to [phone number] — just tap the link to fill it out before your visit."
-
-IF FORMS NOT COMPLETED
-AI does NOT block the booking. Note on reservation that forms are pending. Staff follows up at check-in.</textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><div class="card-title">Goodbye</div></div>
-        <div class="card-body">
-          <div class="textarea-prompt">How does the AI close the call? Every caller should know exactly what happens next.</div>
-          <textarea>THE CLOSE
-"Is there anything else I can help with today?"
-"Thank you for calling Pete & Mac's — have a great day!"
-
-IF CALLER HAS ANOTHER QUESTION
-If the caller says yes, help them with their next request. No need to re-greet — just ask "What else can I help with?"
-
-NEXT STEP BY CALL TYPE
-• Booking: "You'll get a confirmation text shortly with all the details."
-• Question: "If you decide to book, just give us a call back anytime."
-• Transfer: "I've passed everything along — [person] will be right with you."
-• After-hours: "Our team will get back to you at [time] tomorrow."</textarea>
-        </div>
-      </div>
     </div>
 
     <div class="tab-panel" data-p2="p2-booking">
@@ -897,6 +820,7 @@ NEXT STEP BY CALL TYPE
       <button class="tab-pill" onclick="showSvc('daycare',this)">Daycare</button>
       <button class="tab-pill" onclick="showSvc('grooming',this)">Grooming</button>
       <button class="tab-pill" onclick="showSvc('training',this)">Training</button>
+      <button class="tab-pill" onclick="showSvc('tour',this)">Tour</button>
       <button class="tab-pill" onclick="showSvc('add-new',this)" style="color:var(--accent)">+ Add</button>
     </div>
 
@@ -911,30 +835,84 @@ NEXT STEP BY CALL TYPE
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Evaluation needed?</div>
+        <div class="service-field-label">Age</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Deposit required?</div>
+        <div class="service-field-label">Vaccine</div>
         <div class="pill-choices">
-          <span class="pill selected" onclick="selectPill(this)">Yes</span>
-          <span class="pill" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Recommended add-on / upgrade</div>
-        <textarea>Suite upgrade for stays 3+ nights or anxious pets. Pupdate Package. Enrichment Activity. Extra Potty Break for 3+ night stays.</textarea>
+        <div class="service-field-label">Evaluation</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Spayed/neutered</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Agreement</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="booking-extra-block">
+        <div class="block-title">Modifications &amp; Cancellations</div>
+        <div class="block-desc">When a caller needs to reschedule, cancel, or extend an existing booking for this service, what can the AI do?</div>
+        <div class="service-field">
+          <div class="service-field-label">Reschedule</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Cancel</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Extend</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
       </div>
       <div class="service-field collect-field" style="display:none">
         <div class="service-field-label">What info should the AI collect before handing off?</div>
         <textarea>Check-in and check-out dates (with day-of-week). Room type recommendation based on pet size and stay length. Feeding schedule, medication, emergency contact. Long-stay notes if applicable.</textarea>
-      </div>
-      <div class="service-field">
-        <div class="service-field-label">Transfer to (if AI can't handle)</div>
-        <input type="text" value="(623) 536-2303 — front desk">
       </div>
     </div>
 
@@ -949,30 +927,84 @@ NEXT STEP BY CALL TYPE
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Evaluation needed?</div>
+        <div class="service-field-label">Age</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Deposit required?</div>
+        <div class="service-field-label">Vaccine</div>
         <div class="pill-choices">
-          <span class="pill selected" onclick="selectPill(this)">Yes</span>
-          <span class="pill" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Recommended add-on / upgrade</div>
-        <textarea>Suite upgrade. Pupdate Package.</textarea>
+        <div class="service-field-label">Evaluation</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Spayed/neutered</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Agreement</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="booking-extra-block">
+        <div class="block-title">Modifications &amp; Cancellations</div>
+        <div class="block-desc">When a caller needs to reschedule, cancel, or extend an existing booking for this service, what can the AI do?</div>
+        <div class="service-field">
+          <div class="service-field-label">Reschedule</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Cancel</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Extend</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
       </div>
       <div class="service-field collect-field" style="display:none">
         <div class="service-field-label">What info should the AI collect before handing off?</div>
         <textarea>Check-in and check-out dates. Feeding schedule, medication, emergency contact.</textarea>
-      </div>
-      <div class="service-field">
-        <div class="service-field-label">Transfer to (if AI can't handle)</div>
-        <input type="text" value="(623) 536-2303 — front desk">
       </div>
     </div>
 
@@ -987,38 +1019,85 @@ NEXT STEP BY CALL TYPE
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Evaluation needed for first-time clients?</div>
+        <div class="service-field-label">Age</div>
         <div class="pill-choices">
-          <span class="pill selected" onclick="selectPill(this)">Yes</span>
-          <span class="pill" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">How should the AI handle new-client evaluations?</div>
-        <textarea>Book the eval day and frame it positively: "The first day is complimentary — it's a chance for us to get to know [pet name] and make sure group play is a great fit."
-If the dog doesn't pass, offer the alternative warmly: "We have a great 1-on-1 option that a lot of dogs actually love."
-See A.3 for eval process details.</textarea>
-      </div>
-      <div class="service-field">
-        <div class="service-field-label">Deposit required?</div>
+        <div class="service-field-label">Vaccine</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Recommended add-on / upgrade</div>
-        <textarea>Returning guests: Enrichment Daycare upgrade.
-New clients: none for first visit — focus on eval.</textarea>
+        <div class="service-field-label">Evaluation</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Spayed/neutered</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Agreement</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="booking-extra-block">
+        <div class="block-title">Modifications &amp; Cancellations</div>
+        <div class="block-desc">When a caller needs to reschedule, cancel, or extend an existing booking for this service, what can the AI do?</div>
+        <div class="service-field">
+          <div class="service-field-label">Reschedule</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Cancel</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Extend</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
       </div>
       <div class="service-field collect-field" style="display:none">
         <div class="service-field-label">What info should the AI collect before handing off?</div>
         <textarea>Returning: confirm schedule (single day or recurring), drop-off time.
 New: confirm vaccines, book eval day, explain eval is free, share drop-off time and pack schedule.</textarea>
-      </div>
-      <div class="service-field">
-        <div class="service-field-label">Transfer to (if AI can't handle)</div>
-        <input type="text" value="(623) 536-2303 — front desk">
       </div>
     </div>
 
@@ -1033,30 +1112,84 @@ New: confirm vaccines, book eval day, explain eval is free, share drop-off time 
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Evaluation needed?</div>
+        <div class="service-field-label">Age</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Deposit required?</div>
+        <div class="service-field-label">Vaccine</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Recommended add-on / upgrade</div>
-        <textarea>Full groom upgrade if pet hasn't been groomed in 60+ days.</textarea>
+        <div class="service-field-label">Evaluation</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Spayed/neutered</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Agreement</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="booking-extra-block">
+        <div class="block-title">Modifications &amp; Cancellations</div>
+        <div class="block-desc">When a caller needs to reschedule, cancel, or extend an existing booking for this service, what can the AI do?</div>
+        <div class="service-field">
+          <div class="service-field-label">Reschedule</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Cancel</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Extend</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
       </div>
       <div class="service-field collect-field" style="display:none">
         <div class="service-field-label">What info should the AI collect before handing off?</div>
         <textarea>Appointment date + time. Service tier (bath vs. full groom) — recommend based on breed, last groom date, or caller preference. Pricing by pet size.</textarea>
-      </div>
-      <div class="service-field">
-        <div class="service-field-label">Transfer to (if AI can't handle)</div>
-        <input type="text" value="Cassandra (Tue–Sat) — grooming team">
       </div>
     </div>
 
@@ -1071,30 +1204,176 @@ New: confirm vaccines, book eval day, explain eval is free, share drop-off time 
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Evaluation needed?</div>
+        <div class="service-field-label">Age</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Deposit required?</div>
+        <div class="service-field-label">Vaccine</div>
         <div class="pill-choices">
-          <span class="pill" onclick="selectPill(this)">Yes</span>
-          <span class="pill selected" onclick="selectPill(this)">No</span>
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Recommended add-on / upgrade</div>
-        <textarea placeholder="Any upsell or add-on the AI should mention for this service."></textarea>
+        <div class="service-field-label">Evaluation</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Spayed/neutered</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Agreement</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="booking-extra-block">
+        <div class="block-title">Modifications &amp; Cancellations</div>
+        <div class="block-desc">When a caller needs to reschedule, cancel, or extend an existing booking for this service, what can the AI do?</div>
+        <div class="service-field">
+          <div class="service-field-label">Reschedule</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Cancel</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Extend</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
       </div>
       <div class="service-field collect-field" style="display:none">
         <div class="service-field-label">What info should the AI collect before handing off?</div>
         <textarea placeholder="Info the AI should gather before passing to staff."></textarea>
       </div>
+    </div>
+
+    <!-- ─── Tour ─── -->
+    <div class="tab-panel" data-svc="tour">
       <div class="service-field">
-        <div class="service-field-label">Transfer to (if AI can't handle)</div>
-        <input type="text" value="Location staff — direct line">
+        <div class="service-field-label">When a caller wants to book, the AI should:</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectBookingPath(this)">Book directly</span>
+          <span class="pill" onclick="selectBookingPath(this)">Collect & hand off</span>
+          <span class="pill" onclick="selectBookingPath(this)">Always transfer</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Age</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Vaccine</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Evaluation</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Spayed/neutered</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Deposit</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Agreement</div>
+        <div class="pill-choices">
+          <span class="pill" onclick="selectPill(this)">Hard gate</span>
+          <span class="pill" onclick="selectPill(this)">Soft gate</span>
+          <span class="pill selected" onclick="selectPill(this)">Not required</span>
+        </div>
+      </div>
+      <div class="booking-extra-block">
+        <div class="block-title">Modifications &amp; Cancellations</div>
+        <div class="block-desc">When a caller needs to reschedule, cancel, or extend an existing booking for this service, what can the AI do?</div>
+        <div class="service-field">
+          <div class="service-field-label">Reschedule</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Cancel</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+        <div class="service-field">
+          <div class="service-field-label">Extend</div>
+          <div class="pill-choices">
+            <span class="pill selected" onclick="selectPill(this)">Handle directly</span>
+            <span class="pill" onclick="selectPill(this)">Collect & hand off</span>
+            <span class="pill" onclick="selectPill(this)">Always transfer</span>
+          </div>
+        </div>
+      </div>
+      <div class="service-field collect-field" style="display:none">
+        <div class="service-field-label">What info should the AI collect before handing off?</div>
+        <textarea placeholder="Info the AI should gather before passing to staff."></textarea>
       </div>
     </div>
 
@@ -1112,48 +1391,6 @@ New: confirm vaccines, book eval day, explain eval is free, share drop-off time 
         <div class="service-field-label">Can AI book directly? Requirements? What info to collect?</div>
         <textarea placeholder="Describe how this service works and what the AI should do when someone asks about it."></textarea>
       </div>
-      <div class="service-field">
-        <div class="service-field-label">Transfer to (if AI can't handle)</div>
-        <input type="text" placeholder="Name / phone / role">
-      </div>
-    </div>
-
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-      <div class="card">
-        <div class="card-head"><div class="card-title">Modifications &amp; Cancellations</div></div>
-        <div class="card-body">
-          <div class="textarea-prompt">When a caller needs to reschedule, cancel, or extend an existing booking — what can the AI do on its own?</div>
-          <div class="service-field">
-            <div class="service-field-label">Can the AI reschedule, cancel, or extend bookings directly?</div>
-            <div class="pill-choices">
-              <span class="pill selected" onclick="selectPill(this)">Yes — AI handles in MoeGo</span>
-              <span class="pill" onclick="selectPill(this)">No — take a message</span>
-            </div>
-          </div>
-          <div class="service-field">
-            <div class="service-field-label">Reschedule / cancel / extend rules</div>
-            <textarea>RESCHEDULE: Collect new dates, check availability, offer two closest alternatives if unavailable. Within 48 hours → mention change policy first. Always read back updated booking.
-
-CANCEL: Mention cancellation policy BEFORE executing. One rebook offer: "Would you like to book a different date instead?" If no, move on.
-
-EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doing great here, we're happy to keep them longer!" Always communicate price impact before executing. If full, offer alternatives or escalate.</textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top: 24px; margin-bottom: 20px;">
-      <div class="card-head"><div class="card-title">Vaccine Gate</div></div>
-      <div class="card-body">
-        <div class="service-field">
-          <div class="service-field-label">When required vaccines are missing or expired</div>
-          <div class="pill-choices">
-            <span class="pill selected" onclick="selectPill(this)">Hard gate — do not book, route to staff</span>
-            <span class="pill" onclick="selectPill(this)">Soft gate — book with a flag, staff follows up</span>
-            <span class="pill" onclick="selectPill(this)">Inform only — tell the caller, but don't block the booking</span>
-          </div>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -1163,24 +1400,29 @@ EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doi
   <div class="card">
     <div class="card-head"><div class="card-title">In-Service Calls</div></div>
     <div class="card-body">
-      <div class="textarea-prompt">When a pet parent calls to ask about their dog that's currently at your facility — how should the AI handle it?</div>
+      <div class="textarea-prompt">A pet is at your facility and the owner calls for an update. The AI can't see the pet — it needs to get the caller to staff. Configure how that handoff works.</div>
       <div class="service-field">
-        <div class="service-field-label">What the AI should do</div>
-        <textarea>1. Reassure the caller: "[Pet Name] is in great hands with our team."
-2. Let them know you'll connect them with someone who can give a real update.
-3. Attempt to transfer to staff. If no answer, offer a callback with a specific timeframe.
-4. Log the request in MoeGo: caller name, pet name, what they asked about.</textarea>
-      </div>
-      <div class="service-field">
-        <div class="service-field-label">How should the AI connect the caller to staff?</div>
+        <div class="service-field-label">Connect to staff</div>
         <div class="pill-choices">
-          <span class="pill selected" onclick="selectPill(this)">Try live transfer first — if no answer, offer callback</span>
-          <span class="pill" onclick="selectPill(this)">Always take a message and have staff call back</span>
+          <span class="pill selected" onclick="selectPill(this)">Offer choice: transfer now or leave info for callback</span>
+          <span class="pill" onclick="selectPill(this)">Try transfer first — if no answer, take details and leave note for callback</span>
         </div>
       </div>
       <div class="service-field">
-        <div class="service-field-label">Callback timeframe</div>
+        <div class="service-field-label">What to say when offering the choice</div>
+        <textarea>"Would you like to just be transferred, or do you want to leave your info to get a callback later?"</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">What to say when promising a callback</div>
         <textarea>"I'll have someone from our care team reach out within 30 minutes with an update on [Pet Name]."</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">When transfer is tried but no one picks up</div>
+        <textarea>Pull the call back. Tell the customer nobody's available right now. Then take their information and leave a note so staff can call them back. Script: "Would you like me to try again, or would you prefer to leave your info and get a callback?"</textarea>
+      </div>
+      <div class="service-field">
+        <div class="service-field-label">Optional: extra steps or script</div>
+        <textarea>Reassure first: "[Pet name] is in great hands." Warm transfer: call the center, get somebody to pick up, transfer the call to them. If no one picks up, follow the "no one picks up" flow above. Log the request in MoeGo (caller, pet, what they asked).</textarea>
       </div>
     </div>
   </div>
@@ -1193,7 +1435,7 @@ EXTEND: Empathy first. If pet is at facility: "Don't worry — [pet name] is doi
     <div class="card-head"><div class="card-title">Upgrade Paths</div></div>
     <div class="card-body">
       <div class="textarea-prompt">The AI reviews each customer's history in MoeGo and offers <strong>one relevant upgrade</strong> per call. List every "from → to" path below — include the trigger condition and how the AI should position it. Edit freely to match your business.</div>
-      <textarea id="upsell-upgrade-paths" class="upsell-main-textarea" style="min-height: 380px; width: 100%; resize: vertical; box-sizing: border-box;">ROOM UPGRADES
+      <textarea id="upsell-upgrade-paths" class="upsell-main-textarea" style="min-height: 60px; width: 100%; resize: vertical; box-sizing: border-box;">ROOM UPGRADES
 Standard Boarding → Luxury Suite
   Trigger: 3+ night stays, anxious pets, or caller mentions wanting extra comfort.
   Script: "A lot of our guests in for longer stays really love the luxury suite — it's a bigger space with a raised bed and a camera so you can check in. Would you like to take a look at that option?"
@@ -1226,11 +1468,25 @@ Daycare single day → Daycare package
     </div>
   </div>
 
+  <div class="card" style="margin-top: 20px;">
+    <div class="card-head"><div class="card-title">Enrichment</div></div>
+    <div class="card-body">
+      <div class="textarea-prompt">How the AI should describe enrichment when upselling. Keep it generic but concrete; don't promise a specific activity on a specific day (staff handle that at check-in or via the daily menu).</div>
+      <textarea id="upsell-enrichment">HOW TO DESCRIBE IT
+• Use a standard line: enrichment is "a great way for your pet to be mentally stimulated."
+• Mention the price: "Enrichment activities are $15."
+• Give a few example types of activities ("such as puzzle play, scent games, and gentle training") without tying them to a specific day — the menu changes weekly.
+
+WHAT THE AI SHOULD NOT DO
+• Do not say what the exact enrichment activity is on a given date. Staff will handle that at check-in or via their daily menu/communications.</textarea>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-head"><div class="card-title">What do you want the AI to do?</div></div>
     <div class="card-body">
       <div class="textarea-prompt">Describe how you want the AI to handle upsell and promotions — your goals, what to push, when to back off, or anything else we should know.</div>
-      <textarea id="upsell-custom-goals" class="upsell-custom-textarea" placeholder="e.g. I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls…" style="min-height: 160px; width: 100%; resize: vertical; box-sizing: border-box;">I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls.</textarea>
+      <textarea id="upsell-custom-goals" class="upsell-custom-textarea" placeholder="e.g. I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls…" style="min-height: 60px; width: 100%; resize: vertical; box-sizing: border-box;">I want the AI to always mention the luxury suite for stays over 5 nights, but never push add-ons on cancellation calls.</textarea>
     </div>
   </div>
 
@@ -1239,28 +1495,17 @@ Daycare single day → Daycare package
     <div class="tab-panel" data-p2="p2-escalation">
 
     <div class="card">
-      <div class="card-head"><div class="card-title">Upset Callers</div></div>
+      <div class="card-head"><div class="card-title">When a caller asks to speak with someone</div></div>
       <div class="card-body">
-        <div class="textarea-prompt">A caller is angry or frustrated. The AI can't fix the problem — only a human can. But how the AI handles this moment matters. What should it do?</div>
-        <textarea>STEP 1 — LISTEN
-Let the caller express their concern fully. Do not interrupt.
-
-STEP 2 — ACKNOWLEDGE
-"I completely understand why that's frustrating."
-"That's definitely not the experience we want for [pet name]."
-
-STEP 3 — APOLOGIZE
-"I'm sorry about that — let me make sure the right person helps you with this."
-
-STEP 4 — TRANSFER WARMLY
-"I'm going to connect you with [manager/our team lead] who can look into this and make it right. Can I place you on a brief hold while I get them?"
-
-NEVER SAY
-"That's our policy" · "There's nothing I can do" · "You need to calm down" · "I'm just the AI"</textarea>
+        <div class="textarea-prompt">When should the AI transfer vs try to help first?</div>
+        <div class="pill-choices">
+          <span class="pill selected" onclick="selectPill(this)">Transfer after they ask twice</span>
+          <span class="pill" onclick="selectPill(this)">Transfer on first ask</span>
+        </div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" style="margin-top: 20px;">
       <div class="card-head"><div class="card-title">When to Transfer Immediately</div></div>
       <div class="card-body">
         <div class="textarea-prompt">What situations are too important or sensitive for the AI? For each one, does the AI transfer now, or can it take a message?</div>
@@ -1269,80 +1514,21 @@ NEVER SAY
 • Caller demands a manager → transfer immediately, never argue
 • Pet injury or medical concern (pet currently in care) → URGENT — transfer to location staff immediately
 • Legal threat or mention of lawyer → transfer to manager, do not discuss liability
-• Media or press inquiry → transfer to corporate / owner, do not comment
-
-TAKE A MESSAGE (callback OK)
-• Billing disputes → note details, promise callback
-• Post-pickup concerns → note details, promise callback
-• Lost & found → note details, promise callback</textarea>
+• Media or press inquiry → transfer to corporate / owner, do not comment</textarea>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-head"><div class="card-title">How to Transfer</div></div>
+    <div class="card" style="margin-top: 20px;">
+      <div class="card-head"><div class="card-title">When staff doesn't answer</div></div>
       <div class="card-body">
-        <div class="textarea-prompt">When the AI needs to hand off to your team, what does it say? How does it put someone on hold? What if no one picks up?</div>
-        <textarea>PLACING ON HOLD
-"Would it be OK if I place you on a brief hold while I [check on that / get the right person]?"
-Never place on hold without asking first.
+        <div class="textarea-prompt">When the AI tries to transfer but no one picks up: pull the call back, tell the customer nobody's available, then take their info and leave a note for callback. Use the script below to give them a clear choice.</div>
+        <textarea>When no one picked up:
+"Would you like me to try again, or would you prefer to leave your info and get a callback?"
 
-RETURNING FROM HOLD
-"Thanks for waiting — I appreciate your patience."
-
-TRANSFERRING
-"I'm going to connect you with [role] who can help you with that. Let me transfer you now."
-
-IF NO ONE PICKS UP
-"I wasn't able to reach [role] right now. Can I take your name and number so they can call you back shortly?"
-Capture: name, phone, reason for call, urgency level.
-Promise a specific callback window: "They'll get back to you within [X hours]."
-
-IF HOLD IS TOO LONG (30+ seconds)
-Check back: "I'm still working on getting [role] — thank you for your patience. Would you prefer to leave a message?"</textarea>
+Then take their details and send a note so staff can call them back.</textarea>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-head"><div class="card-title">Transfer Directory</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">Who handles what? List the people or roles the AI should transfer to, and when.</div>
-        <textarea>FRONT DESK / GENERAL
-Role: Front desk staff
-When: General questions AI can't answer, booking issues, schedule changes
-Contact: (623) 536-2303
-
-MANAGER
-Role: Location manager (Krystle Humes)
-When: Complaints, legal threats, escalations, injury reports
-Contact: khumes@bestfriends.net
-
-GROOMING
-Role: Grooming team (Cassandra)
-When: Grooming-specific scheduling, breed-specific questions
-Available: Tue–Sat
-
-CORPORATE / OWNER
-When: Media inquiries, legal matters, corporate policy questions
-Contact: [Fill in corporate contact]</textarea>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><div class="card-title">Technical Problems</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">What should the AI do if something breaks mid-call — it can't access the booking system, the call drops, or there's a technical issue?</div>
-        <textarea>SYSTEM UNAVAILABLE
-"I'm having a little trouble pulling that up right now. Let me take your information and have our team get back to you shortly."
-Capture all details. Never blame the technology or say "the system is down."
-
-CALL DROPS
-If the caller calls back: "Welcome back! I'm sorry about that — let me pick up right where we left off."
-Resume from last confirmed point. Don't make the caller repeat everything.
-
-ANYTHING UNEXPECTED
-Default to: capture information + promise callback. Never leave the caller hanging.</textarea>
-      </div>
-    </div>
     </div>
 
   </div>
@@ -1403,7 +1589,7 @@ Default to: capture information + promise callback. Never leave the caller hangi
           <span class="callout-icon">i</span>
           <span>Open questions, things you're not sure about, special situations with your customers, or anything about your business that didn't fit anywhere above — add it here and we'll address it before go-live.</span>
         </div>
-        <textarea style="width: 100%; min-height: 90px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r); font-family: var(--sans); font-size: 13px; color: var(--text); background: var(--surface); outline: none; resize: vertical; line-height: 1.6;" placeholder="e.g. We sometimes get calls about group events or birthday parties — how should the AI handle those?"></textarea>
+        <textarea style="width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r); font-family: var(--sans); font-size: 13px; color: var(--text); background: var(--surface); outline: none; resize: vertical; line-height: 1.6;" placeholder="e.g. We sometimes get calls about group events or birthday parties — how should the AI handle those?"></textarea>
       </div>
     </div>
 
@@ -1454,7 +1640,14 @@ const NAMES = {
   'm3-escalation': 'Escalation Scenarios',
   'signoff': 'Sign Off'
 };
-const P2_NAMES = { 'p2-brand': 'Brand & Voice', 'p2-booking': 'Booking', 'p2-inservice': 'In-Service', 'p2-upsell': 'Upsell', 'p2-escalation': 'Escalation' };
+const P2_NAMES = { 'p2-brand': 'Brand & Voice', 'p2-booking': 'Booking', 'p2-inservice': 'In-Service', 'p2-upsell': 'Upsell', 'p2-escalation': 'Escalation & Transfer' };
+const P2_DESCS = {
+  'p2-brand': 'How your AI sounds and greets callers. Tone, personality, and the opening line.',
+  'p2-booking': 'How the AI handles booking requests per service: booking path, requirements (gates), and modifications. Hard gate = must complete before booking (Deposit: must collect). Soft gate = book with flag, staff follows up. Not required = no gate.',
+  'p2-inservice': 'When a pet is at your facility and the owner calls. How the AI connects them to staff or takes a message.',
+  'p2-upsell': 'Upgrade paths, enrichment, and how you want the AI to handle promotions and add-ons.',
+  'p2-escalation': 'When to transfer immediately, when a caller asks for a person, and what to say when staff doesn\'t answer.'
+};
 
 // ── LOCATION FROM URL + AUTO-SAVE (one form per location) ─────────
 const LOCATION_NAMES = { avondale: "Pete and Mac's Avondale", gilbert: "Pete and Mac's Gilbert" };
@@ -1507,6 +1700,7 @@ function applyState(data, loc) {
       var el = els[i];
       if (el.id === 'upsell-upgrade-paths' && (v.includes('STEP 1 — LISTEN') || v.includes('STEP 2 — ACKNOWLEDGE'))) return;
       if (el.id === 'upsell-custom-goals' && (v.includes('STEP 1 — LISTEN') || v.includes('STEP 2 — ACKNOWLEDGE') || (v.includes('ROOM UPGRADES') && v.includes('CROSS-SERVICE')))) return;
+      if (el.id === 'upsell-enrichment' && (!v || v.trim().length < 30)) return;
       el.value = v;
     });
   }
@@ -2342,6 +2536,7 @@ function show(id) {
   current = id;
   window.scrollTo(0, 0);
   scheduleSave();
+  if (window.resizeAllTextareas) setTimeout(window.resizeAllTextareas, 0);
 }
 
 function showPart2Tab(p2Id, navEl) {
@@ -2352,9 +2547,14 @@ function showPart2Tab(p2Id, navEl) {
   showP2(p2Id, null);
   if (navEl) navEl.classList.add('active');
   document.getElementById('topCurrent').textContent = P2_NAMES[p2Id] || p2Id;
+  var titleEl = document.getElementById('part2-title');
+  var descEl = document.getElementById('part2-desc');
+  if (titleEl) titleEl.textContent = P2_NAMES[p2Id] || p2Id;
+  if (descEl) descEl.textContent = P2_DESCS[p2Id] || '';
   current = 'part2';
   window.scrollTo(0, 0);
   scheduleSave();
+  if (window.resizeAllTextareas) setTimeout(window.resizeAllTextareas, 0);
 }
 
 function navNext() {
@@ -2402,6 +2602,7 @@ function showSvc(id, btn) {
   const panel = booking.querySelector('[data-svc="' + id + '"]');
   if (panel) panel.classList.add('active');
   if (btn) btn.classList.add('active');
+  if (window.resizeAllTextareas) setTimeout(window.resizeAllTextareas, 0);
 }
 
 // ── INIT: location from URL + load state + auto-save on input ─────
@@ -2421,11 +2622,29 @@ function showSvc(id, btn) {
   if (welcome) welcome.textContent = 'Welcome, ' + name + '!';
   document.title = 'MoeGo AI Setup · ' + name;
 
+  // Auto-resize textareas to show full content (available early for applyState + tab switches)
+  function resizeTextarea(ta) {
+    if (!ta || ta.tagName !== 'TEXTAREA') return;
+    ta.style.height = 'auto';
+    var min = 60, max = 1200;
+    if (ta.closest('.card')) { min = 60; max = 1000; }
+    if (ta.closest('.service-field')) { min = 56; max = 600; }
+    if (ta.closest('.signoff-field')) { min = 56; max = 400; }
+    var h = Math.min(max, Math.max(min, ta.scrollHeight));
+    ta.style.height = h + 'px';
+  }
+  function resizeAllTextareas() {
+    var content = document.querySelector('.content');
+    if (content) content.querySelectorAll('textarea').forEach(resizeTextarea);
+  }
+  window.resizeAllTextareas = resizeAllTextareas;
+
   try {
     const raw = localStorage.getItem(getStorageKey(loc));
     if (raw) {
       const data = JSON.parse(raw);
       applyState(data, loc);
+      setTimeout(resizeAllTextareas, 0);
     }
   } catch (e) {}
 
@@ -2433,25 +2652,11 @@ function showSvc(id, btn) {
   if (content) {
     content.addEventListener('input', scheduleSave);
     content.addEventListener('change', scheduleSave);
-  }
-
-  // Auto-resize textareas to show full content (less scrolling when reviewing)
-  function resizeTextarea(ta) {
-    if (!ta || ta.tagName !== 'TEXTAREA') return;
-    ta.style.height = 'auto';
-    var min = 200, max = 1200;
-    if (ta.closest('.service-field')) { min = 100; max = 600; }
-    if (ta.closest('.signoff-field')) { min = 80; max = 400; }
-    var h = Math.min(max, Math.max(min, ta.scrollHeight));
-    ta.style.height = h + 'px';
-  }
-  function resizeAllTextareas() {
-    document.querySelectorAll('.content textarea').forEach(resizeTextarea);
+    content.addEventListener('input', function(e) {
+      if (e.target.tagName === 'TEXTAREA') resizeTextarea(e.target);
+    });
   }
   resizeAllTextareas();
-  document.querySelector('.content').addEventListener('input', function(e) {
-    if (e.target.tagName === 'TEXTAREA') resizeTextarea(e.target);
-  });
   setTimeout(resizeAllTextareas, 100);
   document.addEventListener('click', function(e) {
     var dd = document.getElementById('restoreDropdown');
