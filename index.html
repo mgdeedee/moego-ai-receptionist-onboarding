@@ -403,7 +403,7 @@ body {
       <span class="cur" id="topCurrent">Overview</span>
     </div>
     <div class="topbar-actions" style="position:relative">
-      <button class="btn btn-ghost" id="btnSave" onclick="manualSave()">Backup</button>
+      <button class="btn btn-ghost" id="btnSave" onclick="manualSave()">Save</button>
       <button class="btn btn-ghost" onclick="openRestoreDropdown()" id="btnRestore">Restore ▼</button>
       <div id="restoreDropdown" class="restore-dropdown"></div>
       <button class="btn btn-ghost" onclick="navPrev()">← Back</button>
@@ -481,25 +481,6 @@ body {
         <tr><td class="field-label">Standard checkout / pickup</td><td class="field-value"><input type="text" value="12:00 PM Noon"></td></tr>
       </table>
     </div>
-    <div class="card">
-      <div class="card-head"><div class="card-title">Service Schedules &amp; Closed Dates</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">List any services with hours different from your general schedule, plus your closed dates / holidays.</div>
-        <textarea>SERVICE-SPECIFIC HOURS
-• Grooming: Tuesday – Saturday, 9:00 AM – 4:00 PM (Cassandra, ~4-5 haircuts/day capacity)
-• Boarding drop-off: Mon–Fri 6:30 AM – 6:30 PM, Sat–Sun 8:00 AM – 5:00 PM
-• Training: By arrangement — clients contact location directly
-
-CLOSED DATES
-• New Year's Day — January 1
-• Easter Sunday
-• Memorial Day — last Monday of May
-• Independence Day — July 4
-• Labor Day — first Monday of September
-• Thanksgiving Day
-• Christmas Day — December 25</textarea>
-      </div>
-    </div>
   </div>
 
   <!-- ══════════════════════════════════════
@@ -528,7 +509,7 @@ CAT BOARDING
 $37.00/night per cat in a 3'×3' condo. Spay/neuter not required.
 
 LATE CHECKOUT
-See Surcharges & Fees (below) for late checkout pricing.
+Late checkout fees may apply — confirm at booking.
 
 WHAT TO BRING
 Solid 4-6 ft lead, quick buckle collar or harness, pre-portioned dry or canned food, medication in original container with instructions, 1-2 Kong/rubber toys, slow feed or elevated bowls.
@@ -610,17 +591,6 @@ Scheduling: Clients contact the location directly to arrange training.</textarea
       <div class="card-body">
         <div class="textarea-prompt">Any services not covered above — pet taxi, swimming, retail, specialty programs, etc.</div>
         <textarea placeholder="Describe any additional services and pricing here..."></textarea>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div class="card-title">Surcharges &amp; Fees</div></div>
-      <div class="card-body">
-        <div class="textarea-prompt">Peak/holiday pricing, late checkout fees, any other surcharges.</div>
-        <textarea>PEAK / HOLIDAY PRICING
-None — no seasonal or holiday surcharges at this location.
-
-LATE CHECKOUT
-$10 per pet if picked up after 3:00 PM (boarding only). Standard checkout is 12:00 PM Noon.</textarea>
       </div>
     </div>
   </div>
@@ -1662,6 +1632,8 @@ function getLocationDisplayName(loc) {
 function getStorageKey(loc) { return 'moego_onboarding_' + loc; }
 function getVersionsKey(loc) { return 'moego_onboarding_' + loc + '_versions'; }
 
+// Bump when form structure changes (add/remove/reorder fields) so old saved state is not applied and prefills stay correct
+const STATE_VERSION = 1;
 const MAX_VERSIONS = 15;
 let _saveTimer = null;
 const SAVE_DEBOUNCE_MS = 500;
@@ -1679,6 +1651,7 @@ function collectState() {
   const scenarioCollapsed = {};
   content.querySelectorAll('.sc[id^="card-"]').forEach(sc => { scenarioCollapsed[sc.id] = sc.classList.contains('collapsed'); });
   return {
+    stateVersion: STATE_VERSION,
     current: typeof current !== 'undefined' ? current : 'welcome',
     part2Tab: (document.querySelector('.nav-item[data-p2].active') || {}).getAttribute?.('data-p2') || 'p2-brand',
     textareas,
@@ -1788,13 +1761,13 @@ function restoreVersion(index) {
   persistState();
   closeRestoreDropdown();
   var btn = document.getElementById('btnSave');
-  if (btn) { btn.textContent = 'Restored ✓'; setTimeout(function() { btn.textContent = 'Backup'; }, 2000); }
+  if (btn) { btn.textContent = 'Restored ✓'; setTimeout(function() { btn.textContent = 'Save'; }, 2000); }
 }
 function openRestoreDropdown() {
   var list = getVersionsList();
   var dd = document.getElementById('restoreDropdown');
   if (!dd) return;
-  if (list.length === 0) { dd.innerHTML = '<div class="restore-empty">No backups yet. Use Backup to create one.</div>'; dd.classList.add('open'); return; }
+  if (list.length === 0) { dd.innerHTML = '<div class="restore-empty">No saved versions yet. Use Save to create one.</div>'; dd.classList.add('open'); return; }
   var html = list.slice(0, 20).map(function(item, i) {
     var d = new Date(item.savedAt);
     var label = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -2643,8 +2616,11 @@ function showSvc(id, btn) {
     const raw = localStorage.getItem(getStorageKey(loc));
     if (raw) {
       const data = JSON.parse(raw);
-      applyState(data, loc);
-      setTimeout(resizeAllTextareas, 0);
+      // Only apply saved state if version matches; otherwise keep HTML defaults so prefills don't get corrupted
+      if (data && data.stateVersion === STATE_VERSION) {
+        applyState(data, loc);
+        setTimeout(resizeAllTextareas, 0);
+      }
     }
   } catch (e) {}
 
